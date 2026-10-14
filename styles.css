@@ -343,3 +343,5 @@ table.lista th { color: var(--muted); font-weight: 600; font-size: .8rem; }
 .ci-ok { background: var(--ok-soft); color: var(--ok); }
 
 @media print { .rodape { display: none; } }
+
+.agend-info a { color: var(--primary); font-weight: 600; text-decoration: none; }

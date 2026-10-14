@@ -128,7 +128,7 @@
   function combinaBusca(a, termo) {
     if (!termo) return true;
     const t = termo.toUpperCase().replace(/[^A-Z0-9 ]/g, "");
-    const alvo = [a.codigo, a.nome, a.cpf, a.placa_cavalo, a.placa_reboque1, a.placa_reboque2,
+    const alvo = [a.codigo, a.nome, a.cpf, a.telefone, a.placa_cavalo, a.placa_reboque1, a.placa_reboque2,
       a.placa_reboque3, a.transportadora].join(" ").toUpperCase();
     return t.split(" ").filter(Boolean).every((p) => alvo.includes(p));
   }
@@ -181,7 +181,7 @@
                   ["NR-20", a.nr20_validade], ["NR-35", a.nr35_validade]]
       .map(([n, d]) => { const s = situacaoDoc(d); return `<span class="doc ${s.cls}">${n}: ${esc(s.txt)}</span>`; })
       .join("");
-    const contato = [a.telefone, a.email].filter(Boolean).map(esc).join(" · ");
+    const contato = a.email ? esc(a.email) : "";
     const R = rotulo();
     const curso = tipoDia() === "curso_osd";
     const opcoes = Object.keys(R)
@@ -192,8 +192,7 @@
         <div class="agend-topo">
           <div>
             <div class="agend-nome">${esc(a.nome)}</div>
-            <div class="agend-info">CPF ${esc(mascaraCPF(a.cpf))} · ${esc(a.transportadora)} · ${esc(a.companhia)}
-              · código <b>${esc(a.codigo)}</b></div>
+            <div class="agend-info">${infoPessoa(a)} · código <b>${esc(a.codigo)}</b></div>
             ${contato ? `<div class="agend-info">${contato}</div>` : ""}
             ${placas ? `<div class="placas">${placas}</div>` : ""}
           </div>
@@ -206,7 +205,7 @@
               ? `<button class="btn-peq nao-imprimir" data-acao="certificado">Certificado</button>` : ""}
           </div>
         </div>
-        ${curso ? "" : `<div class="docs">${docs}</div>`}
+        ${curso || !temDocs(a) ? "" : `<div class="docs">${docs}</div>`}
         <div class="agend-obs nao-imprimir">
           <textarea rows="1" placeholder="Observação" data-acao="obs">${esc(a.obs || "")}</textarea>
           <button class="btn-peq" data-acao="gravar-obs">Gravar</button>
@@ -397,6 +396,17 @@
     document.querySelectorAll("[data-print-obs]").forEach((el) => (el.style.display = "none")));
 
   // ================= Utilidades =================
+  // Linha de identificação: só mostra o que foi informado
+  function infoPessoa(a) {
+    return [
+      a.cpf ? `CPF ${esc(mascaraCPF(a.cpf))}` : "",
+      esc(a.transportadora),
+      a.companhia ? esc(a.companhia) : "",
+      a.telefone ? `<a href="tel:+55${esc(a.telefone)}">${esc(fmtTel(a.telefone))}</a>` : "",
+    ].filter(Boolean).join(" · ");
+  }
+  const fmtTel = (t) => String(t || "").replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3");
+  const temDocs = (a) => [a.cnh_validade, a.mopp_validade, a.nr20_validade, a.nr35_validade].some(Boolean);
   const horaDe = (iso) =>
     new Date(iso).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
 
@@ -492,7 +502,7 @@
       <div class="card ci-card">
         <span class="chip${h.tipo === "curso_osd" ? " curso" : ""}">${esc(NOME_TIPO[h.tipo])}</span>
         <h2 style="margin:10px 0 2px">${esc(a.nome)}</h2>
-        <div class="agend-info">CPF ${esc(mascaraCPF(a.cpf))} · ${esc(a.transportadora)} · ${esc(a.companhia)}</div>
+        <div class="agend-info">${infoPessoa(a)}</div>
         <div class="agend-info"><b>${fmtData(h.data)}</b> · ${fmtHora(h.hora_inicio)} às ${fmtHora(h.hora_fim)}
           · status <span class="status st-${esc(a.status)}">${esc(R[a.status])}</span></div>
         ${placas ? `<div class="placas">${placas}</div>` : ""}
@@ -527,7 +537,7 @@
     const lista = participantesDoDia();
     const data = $("d-data").value;
     const h = horariosDia[0];
-    const linhas = lista.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.nome)}</td><td>${esc(mascaraCPF(a.cpf))}</td>
+    const linhas = lista.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.nome)}</td><td>${a.cpf ? esc(mascaraCPF(a.cpf)) : ""}</td>
       <td>${esc(a.transportadora)}</td><td></td></tr>`).join("");
     const vazias = Array.from({ length: 5 }, (_, i) =>
       `<tr><td>${lista.length + i + 1}</td><td></td><td></td><td></td><td></td></tr>`).join("");
@@ -585,7 +595,7 @@
       pdf.text(a.nome, W / 2, 92, { align: "center", maxWidth: W - 60 });
 
       pdf.setFont("helvetica", "normal"); pdf.setFontSize(13); pdf.setTextColor(30);
-      const txt = `portador(a) do CPF ${mascaraCPF(a.cpf)}, da transportadora ${a.transportadora}, ` +
+      const txt = `${a.cpf ? `portador(a) do CPF ${mascaraCPF(a.cpf)}, ` : ""}da transportadora ${a.transportadora}, ` +
         `concluiu o ${curso}, realizado em ${fmtData(data)} no ${cfg.NOME_LOCAL || "terminal"}, ` +
         `com carga horária de ${cfg.CURSO_CARGA_HORARIA || "—"}.`;
       pdf.text(pdf.splitTextToSize(txt, W - 80), W / 2, 108, { align: "center" });
@@ -651,8 +661,8 @@
         "Status": ROTULOS[a.horarios.tipo][a.status],
         "Chegada": a.checkin_em ? horaDe(a.checkin_em) : "",
         "Nome": a.nome,
-        "CPF": mascaraCPF(a.cpf),
-        "Telefone": a.telefone || "",
+        "CPF": a.cpf ? mascaraCPF(a.cpf) : "",
+        "Telefone": a.telefone ? fmtTel(a.telefone) : "",
         "E-mail": a.email || "",
         "Transportadora": a.transportadora,
         "Companhia": a.companhia,

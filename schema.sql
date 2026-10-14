@@ -57,6 +57,11 @@ create table if not exists public.agendamentos (
 
 alter table public.agendamentos alter column placa_cavalo drop not null;
 
+-- v4: checklist pede só nome, placa, transportadora e telefone; curso só nome, CPF e transportadora
+alter table public.agendamentos alter column cpf drop not null;
+alter table public.agendamentos alter column companhia drop not null;
+create index if not exists agendamentos_placa_idx on public.agendamentos(placa_cavalo);
+
 -- v3: consentimento LGPD e check-in na portaria
 alter table public.agendamentos add column if not exists consentimento_em timestamptz;
 alter table public.agendamentos add column if not exists checkin_em timestamptz;
@@ -149,12 +154,11 @@ declare
   v_h        public.horarios%rowtype;
   v_ocupadas int;
   v_check    boolean;
-  v_cpf      text := regexp_replace(coalesce(p->>'cpf', ''), '\D', '', 'g');
-  v_cavalo   text := public.norm_placa(p->>'placa_cavalo');
-  v_r1       text := public.norm_placa(p->>'placa_reboque1');
-  v_r2       text := public.norm_placa(p->>'placa_reboque2');
-  v_r3       text := public.norm_placa(p->>'placa_reboque3');
-  v_regex    text := '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$';
+  v_nome     text := upper(trim(coalesce(p->>'nome', '')));
+  v_transp   text := upper(trim(coalesce(p->>'transportadora', '')));
+  v_cpf      text := nullif(regexp_replace(coalesce(p->>'cpf', ''), '\D', '', 'g'), '');
+  v_tel      text := nullif(regexp_replace(coalesce(p->>'telefone', ''), '\D', '', 'g'), '');
+  v_placa    text := public.norm_placa(p->>'placa_cavalo');
   v_codigo   text;
 begin
   select * into v_h from public.horarios
@@ -167,43 +171,29 @@ begin
     raise exception 'Esse horário já passou. Escolha outro.';
   end if;
 
-  v_check := v_h.tipo = 'checklist';
-
   if coalesce((p->>'consentimento')::boolean, false) is not true then
     raise exception 'Para agendar, aceite o uso dos seus dados (LGPD).';
   end if;
 
-  if length(v_cpf) <> 11 then raise exception 'CPF inválido.'; end if;
-  if coalesce(trim(p->>'nome'), '') = ''
-     or coalesce(trim(p->>'transportadora'), '') = ''
-     or coalesce(trim(p->>'companhia'), '') = '' then
-    raise exception 'Preencha todos os campos obrigatórios.';
+  v_check := v_h.tipo = 'checklist';
+
+  if v_nome = '' or v_transp = '' then
+    raise exception 'Preencha nome e transportadora.';
   end if;
 
   if v_check then
-    if v_cavalo is null then raise exception 'Informe a placa do cavalo.'; end if;
-    if v_cavalo !~ v_regex
-       or (v_r1 is not null and v_r1 !~ v_regex)
-       or (v_r2 is not null and v_r2 !~ v_regex)
-       or (v_r3 is not null and v_r3 !~ v_regex) then
+    -- checklist: nome, placa, transportadora e telefone
+    if v_placa is null or v_placa !~ '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$' then
       raise exception 'Placa inválida. Use o formato ABC1234 ou ABC1D23.';
     end if;
-    -- documento informado já vencido na data do checklist bloqueia o agendamento
-    if nullif(p->>'cnh_validade', '')::date < v_h.data then
-      raise exception 'Sua CNH estará vencida na data do checklist. Renove antes de agendar.';
+    if v_tel is null or length(v_tel) not between 10 and 11 then
+      raise exception 'Telefone inválido. Informe com DDD.';
     end if;
-    if nullif(p->>'mopp_validade', '')::date < v_h.data then
-      raise exception 'Seu MOPP estará vencido na data do checklist. Renove antes de agendar.';
-    end if;
-    if nullif(p->>'nr20_validade', '')::date < v_h.data then
-      raise exception 'Seu NR-20 estará vencido na data do checklist. Renove antes de agendar.';
-    end if;
-    if nullif(p->>'nr35_validade', '')::date < v_h.data then
-      raise exception 'Seu NR-35 estará vencido na data do checklist. Renove antes de agendar.';
-    end if;
+    v_cpf := null;
   else
-    -- curso não usa placas nem documentos do caminhão
-    v_cavalo := null; v_r1 := null; v_r2 := null; v_r3 := null;
+    -- curso: nome, CPF e transportadora
+    if v_cpf is null or length(v_cpf) <> 11 then raise exception 'CPF inválido.'; end if;
+    v_placa := null; v_tel := null;
   end if;
 
   select count(*) into v_ocupadas from public.agendamentos
@@ -215,9 +205,9 @@ begin
   if v_check then
     if exists (select 1 from public.agendamentos a
                  join public.horarios h on h.id = a.horario_id
-                where a.cpf = v_cpf and h.tipo = 'checklist' and h.data = v_h.data
+                where a.placa_cavalo = v_placa and h.tipo = 'checklist' and h.data = v_h.data
                   and a.status <> 'cancelado') then
-      raise exception 'Já existe um checklist agendado para esse CPF nesse dia.';
+      raise exception 'Essa placa já tem checklist agendado nesse dia.';
     end if;
   else
     if exists (select 1 from public.agendamentos a
@@ -232,34 +222,24 @@ begin
   v_codigo := upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
 
   insert into public.agendamentos (
-    horario_id, codigo, nome, cpf, telefone, email, transportadora, companhia,
-    placa_cavalo, placa_reboque1, placa_reboque2, placa_reboque3,
-    cnh_validade, mopp_validade, nr20_validade, nr35_validade, consentimento_em
+    horario_id, codigo, nome, cpf, telefone, transportadora, placa_cavalo, consentimento_em
   ) values (
-    v_h.id, v_codigo, upper(trim(p->>'nome')), v_cpf,
-    nullif(regexp_replace(coalesce(p->>'telefone', ''), '\D', '', 'g'), ''),
-    nullif(lower(trim(coalesce(p->>'email', ''))), ''),
-    upper(trim(p->>'transportadora')), upper(trim(p->>'companhia')),
-    v_cavalo, v_r1, v_r2, v_r3,
-    case when v_check then nullif(p->>'cnh_validade',  '')::date end,
-    case when v_check then nullif(p->>'mopp_validade', '')::date end,
-    case when v_check then nullif(p->>'nr20_validade', '')::date end,
-    case when v_check then nullif(p->>'nr35_validade', '')::date end,
-    now()
+    v_h.id, v_codigo, v_nome, v_cpf, v_tel, v_transp, v_placa, now()
   );
 
   return v_codigo;
 end $$;
 
--- Motorista consulta o próprio agendamento (CPF + código)
+-- Consulta o próprio agendamento: código + CPF (curso) ou placa (checklist)
 create function public.consultar_agendamento(p_cpf text, p_codigo text)
 returns table (tipo text, data date, hora_inicio time, hora_fim time, nome text, placa_cavalo text, status text)
 language sql stable security definer set search_path = public as $$
   select h.tipo, h.data, h.hora_inicio, h.hora_fim, a.nome, a.placa_cavalo, a.status
     from public.agendamentos a
     join public.horarios h on h.id = a.horario_id
-   where a.cpf = regexp_replace(coalesce(p_cpf, ''), '\D', '', 'g')
-     and a.codigo = upper(trim(coalesce(p_codigo, '')))
+   where a.codigo = upper(trim(coalesce(p_codigo, '')))
+     and (a.cpf = regexp_replace(coalesce(p_cpf, ''), '\D', '', 'g')
+          or a.placa_cavalo = public.norm_placa(p_cpf))
    order by h.data desc
    limit 1;
 $$;
@@ -274,8 +254,9 @@ begin
     into v_id, v_status, v_data, v_hora
     from public.agendamentos a
     join public.horarios h on h.id = a.horario_id
-   where a.cpf = regexp_replace(coalesce(p_cpf, ''), '\D', '', 'g')
-     and a.codigo = upper(trim(coalesce(p_codigo, '')))
+   where a.codigo = upper(trim(coalesce(p_codigo, '')))
+     and (a.cpf = regexp_replace(coalesce(p_cpf, ''), '\D', '', 'g')
+          or a.placa_cavalo = public.norm_placa(p_cpf))
    order by h.data desc
    limit 1;
 

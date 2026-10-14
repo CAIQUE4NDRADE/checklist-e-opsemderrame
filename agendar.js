@@ -6,10 +6,12 @@
 
   const $ = (id) => document.getElementById(id);
   const CHAVE_LEMBRAR = "agenda_checklist_motorista";
-  const CAMPOS_PESSOA = ["nome", "cpf", "telefone", "email", "transportadora", "companhia"];
-  const CAMPOS_CAMINHAO = ["placa_cavalo", "placa_reboque1", "placa_reboque2", "placa_reboque3",
-    "cnh_validade", "mopp_validade", "nr20_validade", "nr35_validade"];
-  const CAMPOS_LEMBRAR = [...CAMPOS_PESSOA, ...CAMPOS_CAMINHAO];
+  // Campos de cada tipo de agendamento
+  const CAMPOS = {
+    checklist: ["nome", "placa_cavalo", "transportadora", "telefone"],
+    curso_osd: ["nome", "cpf", "transportadora"],
+  };
+  const CAMPOS_LEMBRAR = ["nome", "cpf", "placa_cavalo", "transportadora", "telefone"];
   const NOME_TIPO = { checklist: "Checklist do caminhão", curso_osd: cfg.NOME_CURSO || "Curso Operação Sem Derrame" };
 
   let tipo = null;
@@ -45,7 +47,7 @@
     $("chip-tipo").textContent = NOME_TIPO[t];
     $("chip-tipo").className = "chip" + (curso ? " curso" : "");
     $("titulo-dia").textContent = curso ? "1. Escolha a turma (terça-feira)" : "1. Escolha o dia";
-    $("bloco-caminhao").classList.toggle("oculto", curso);
+    document.querySelectorAll("[data-so]").forEach((el) => el.classList.toggle("oculto", el.dataset.so !== t));
     diaSel = hojeSP();
     mostrarPasso("passo-horario");
     renderDias();
@@ -156,19 +158,17 @@
 
   // ---------- Máscaras ----------
   $("f-cpf").addEventListener("input", (e) => (e.target.value = mascaraCPF(e.target.value)));
-  $("c-cpf").addEventListener("input", (e) => (e.target.value = mascaraCPF(e.target.value)));
+  // Consulta aceita placa (letras no começo) ou CPF (só números)
+  $("c-cpf").addEventListener("input", (e) => {
+    const v = e.target.value;
+    e.target.value = /^[0-9]/.test(v.trim()) ? mascaraCPF(v) : normPlaca(v);
+  });
   $("f-telefone").addEventListener("input", (e) => (e.target.value = mascaraTelefone(e.target.value)));
   $("c-codigo").addEventListener("input", (e) =>
     (e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")));
   document.querySelectorAll("input.placa").forEach((el) =>
     el.addEventListener("input", (e) => (e.target.value = normPlaca(e.target.value))));
 
-  const dl = $("lista-companhias");
-  (cfg.COMPANHIAS || []).forEach((c) => {
-    const o = document.createElement("option");
-    o.value = c;
-    dl.appendChild(o);
-  });
 
   // ---------- Lembrar dados neste celular ----------
   function carregarLembrados() {
@@ -199,23 +199,20 @@
     document.querySelectorAll("#passo-dados .invalido").forEach((el) => el.classList.remove("invalido"));
 
     const ehChecklist = tipo === "checklist";
-    const campos = ehChecklist ? CAMPOS_LEMBRAR : CAMPOS_PESSOA;
     const dados = {};
-    campos.forEach((k) => (dados[k] = $("f-" + k).value.trim()));
+    CAMPOS[tipo].forEach((k) => (dados[k] = $("f-" + k).value.trim()));
 
     const problemas = [];
     const marcar = (k, txt) => { $("f-" + k).classList.add("invalido"); problemas.push(txt); };
 
     if (!dados.nome) marcar("nome", "nome");
-    if (!cpfValido(dados.cpf)) marcar("cpf", "CPF válido");
-    if (!dados.transportadora) marcar("transportadora", "transportadora");
-    if (!dados.companhia) marcar("companhia", "companhia");
     if (ehChecklist) {
-      if (!placaValida(dados.placa_cavalo)) marcar("placa_cavalo", "placa do cavalo");
-      ["placa_reboque1", "placa_reboque2", "placa_reboque3"].forEach((k) => {
-        if (dados[k] && !placaValida(dados[k])) marcar(k, "placa do " + k.replace("placa_reboque", "reboque "));
-      });
+      if (!placaValida(dados.placa_cavalo)) marcar("placa_cavalo", "placa (ex.: ABC1D23)");
+    } else if (!cpfValido(dados.cpf)) {
+      marcar("cpf", "CPF válido");
     }
+    if (!dados.transportadora) marcar("transportadora", "transportadora");
+    if (ehChecklist && ![10, 11].includes(soDigitos(dados.telefone).length)) marcar("telefone", "telefone com DDD");
 
     if (!problemas.length && !$("f-consentimento").checked) {
       erro.textContent = "Para agendar, marque a autorização de uso dos dados.";
@@ -233,8 +230,9 @@
     btn.disabled = true;
     btn.textContent = "Enviando...";
 
-    const payload = { ...dados, cpf: soDigitos(dados.cpf), telefone: soDigitos(dados.telefone),
-                      horario_id: slotSel.id, consentimento: true };
+    const payload = { ...dados, horario_id: slotSel.id, consentimento: true };
+    if (dados.cpf) payload.cpf = soDigitos(dados.cpf);
+    if (dados.telefone) payload.telefone = soDigitos(dados.telefone);
     const { data: codigo, error } = await sb.rpc("agendar", { p: payload });
 
     btn.disabled = false;
@@ -259,6 +257,7 @@
     new QRCode(qr, { text: codigo, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M });
 
     const curso = tipo === "curso_osd";
+    $("ok-ident").textContent = curso ? "o seu CPF" : "a placa do caminhão";
     $("ok-orientacao").innerHTML = `<b>Antes de vir:</b> ${esc(textoOri(
       (curso ? cfg.ORIENTACOES_CURSO : cfg.ORIENTACOES_CHECKLIST)?.[0] || ""))}
       <a href="#" id="ver-orientacoes">Ver todas as orientações</a>`;
@@ -297,10 +296,11 @@
     erro.textContent = "";
     res.classList.add("oculto");
 
-    const cpf = soDigitos($("c-cpf").value);
+    const bruto = $("c-cpf").value.trim();
+    const cpf = /^[0-9]/.test(bruto) ? soDigitos(bruto) : normPlaca(bruto);   // CPF ou placa
     const codigo = $("c-codigo").value.trim().toUpperCase();
-    if (cpf.length !== 11 || codigo.length !== 6) {
-      erro.textContent = "Informe o CPF e o código de 6 caracteres.";
+    if (!(cpf.length === 11 || placaValida(cpf)) || codigo.length !== 6) {
+      erro.textContent = "Informe a placa (ou o CPF, no curso) e o código de 6 caracteres.";
       return;
     }
 

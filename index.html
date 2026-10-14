@@ -43,11 +43,11 @@
         <div class="tipos">
           <button type="button" class="tipo-opcao" data-tipo="checklist">
             <b>Checklist do caminhão</b>
-            <small>Inspeção do conjunto antes de carregar. Horários de segunda a sábado.</small>
+            <small>Informe nome, placa, transportadora e telefone. Horários de segunda a sábado.</small>
           </button>
           <button type="button" class="tipo-opcao" data-tipo="curso_osd">
             <b data-nome-curso>Curso Operação Sem Derrame</b>
-            <small>Turma toda terça-feira. Não precisa informar placas.</small>
+            <small>Informe nome, CPF e transportadora. Turma toda terça-feira.</small>
           </button>
         </div>
       </div>
@@ -75,74 +75,23 @@
         <label for="f-nome">Nome completo</label>
         <input id="f-nome" name="nome" autocomplete="name" required>
 
-        <div class="grid2">
-          <div>
-            <label for="f-cpf">CPF</label>
-            <input id="f-cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required>
-          </div>
-          <div>
-            <label for="f-telefone">Telefone <span class="opc">(opcional)</span></label>
-            <input id="f-telefone" name="telefone" inputmode="tel" autocomplete="tel" placeholder="(19) 99999-9999">
-          </div>
+        <div id="campo-placa" data-so="checklist">
+          <label for="f-placa_cavalo">Placa do caminhão (cavalo)</label>
+          <input id="f-placa_cavalo" name="placa_cavalo" class="placa" autocapitalize="characters" placeholder="ABC1D23">
         </div>
 
-        <label for="f-email">E-mail <span class="opc">(opcional)</span></label>
-        <input id="f-email" name="email" type="email" autocomplete="email">
-
-        <div class="grid2">
-          <div>
-            <label for="f-transportadora">Transportadora</label>
-            <input id="f-transportadora" name="transportadora" required>
-          </div>
-          <div>
-            <label for="f-companhia">Companhia</label>
-            <input id="f-companhia" name="companhia" list="lista-companhias" required>
-            <datalist id="lista-companhias"></datalist>
-          </div>
+        <div id="campo-cpf" data-so="curso_osd">
+          <label for="f-cpf">CPF</label>
+          <input id="f-cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00">
         </div>
 
-        <div id="bloco-caminhao">
-        <h3>Placas</h3>
-        <div class="grid2">
-          <div>
-            <label for="f-placa_cavalo">Cavalo</label>
-            <input id="f-placa_cavalo" name="placa_cavalo" class="placa" autocapitalize="characters" placeholder="ABC1D23" required>
-          </div>
-          <div>
-            <label for="f-placa_reboque1">Reboque 1 <span class="opc">(opcional)</span></label>
-            <input id="f-placa_reboque1" name="placa_reboque1" class="placa" autocapitalize="characters">
-          </div>
-          <div>
-            <label for="f-placa_reboque2">Reboque 2 <span class="opc">(opcional)</span></label>
-            <input id="f-placa_reboque2" name="placa_reboque2" class="placa" autocapitalize="characters">
-          </div>
-          <div>
-            <label for="f-placa_reboque3">Reboque 3 <span class="opc">(opcional)</span></label>
-            <input id="f-placa_reboque3" name="placa_reboque3" class="placa" autocapitalize="characters">
-          </div>
-        </div>
+        <label for="f-transportadora">Transportadora</label>
+        <input id="f-transportadora" name="transportadora" required>
 
-        <h3>Validade dos documentos</h3>
-        <p class="muted" style="margin-top:0">Ajuda a equipe a conferir antes de você chegar.</p>
-        <div class="grid2">
-          <div>
-            <label for="f-cnh_validade">CNH</label>
-            <input id="f-cnh_validade" name="cnh_validade" type="date">
-          </div>
-          <div>
-            <label for="f-mopp_validade">MOPP</label>
-            <input id="f-mopp_validade" name="mopp_validade" type="date">
-          </div>
-          <div>
-            <label for="f-nr20_validade">NR-20</label>
-            <input id="f-nr20_validade" name="nr20_validade" type="date">
-          </div>
-          <div>
-            <label for="f-nr35_validade">NR-35</label>
-            <input id="f-nr35_validade" name="nr35_validade" type="date">
-          </div>
+        <div id="campo-telefone" data-so="checklist">
+          <label for="f-telefone">Telefone (com DDD)</label>
+          <input id="f-telefone" name="telefone" inputmode="tel" autocomplete="tel" placeholder="(19) 99999-9999">
         </div>
-        </div><!-- /bloco-caminhao -->
 
         <label class="check" for="f-consentimento">
           <input type="checkbox" id="f-consentimento">
@@ -166,7 +115,7 @@
         <div class="codigo" id="ok-codigo"></div>
         <div class="qr-box" id="ok-qr"></div>
         <p class="muted">Tire um print desta tela e apresente na portaria.<br>
-          Para consultar ou cancelar, use a aba <b>Meu agendamento</b> com seu CPF e este código.</p>
+          Para consultar ou cancelar, use a aba <b>Meu agendamento</b> com este código e <span id="ok-ident">a placa</span>.</p>
         <div class="acoes acoes-centro">
           <button type="button" id="btn-ics">📅 Adicionar à minha agenda</button>
           <a class="btn" id="btn-maps" target="_blank" rel="noopener">📍 Como chegar</a>
@@ -180,8 +129,8 @@
     <section id="aba-consultar" class="oculto">
       <form class="card" id="form-consulta" novalidate>
         <h2>Consultar ou cancelar</h2>
-        <label for="c-cpf">CPF</label>
-        <input id="c-cpf" inputmode="numeric" placeholder="000.000.000-00">
+        <label for="c-cpf">Placa do caminhão (checklist) ou CPF (curso)</label>
+        <input id="c-cpf" autocapitalize="characters" placeholder="ABC1D23 ou 000.000.000-00">
         <label for="c-codigo">Código de confirmação</label>
         <input id="c-codigo" autocapitalize="characters" maxlength="6" placeholder="Ex.: A1B2C3"
                style="font-family:ui-monospace,monospace;letter-spacing:.2em">
