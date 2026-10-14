@@ -57,6 +57,10 @@ create table if not exists public.agendamentos (
 
 alter table public.agendamentos alter column placa_cavalo drop not null;
 
+-- v3: consentimento LGPD e check-in na portaria
+alter table public.agendamentos add column if not exists consentimento_em timestamptz;
+alter table public.agendamentos add column if not exists checkin_em timestamptz;
+
 create index if not exists agendamentos_horario_idx on public.agendamentos(horario_id);
 create index if not exists agendamentos_cpf_idx     on public.agendamentos(cpf);
 create index if not exists horarios_data_idx        on public.horarios(data);
@@ -165,6 +169,10 @@ begin
 
   v_check := v_h.tipo = 'checklist';
 
+  if coalesce((p->>'consentimento')::boolean, false) is not true then
+    raise exception 'Para agendar, aceite o uso dos seus dados (LGPD).';
+  end if;
+
   if length(v_cpf) <> 11 then raise exception 'CPF inválido.'; end if;
   if coalesce(trim(p->>'nome'), '') = ''
      or coalesce(trim(p->>'transportadora'), '') = ''
@@ -179,6 +187,19 @@ begin
        or (v_r2 is not null and v_r2 !~ v_regex)
        or (v_r3 is not null and v_r3 !~ v_regex) then
       raise exception 'Placa inválida. Use o formato ABC1234 ou ABC1D23.';
+    end if;
+    -- documento informado já vencido na data do checklist bloqueia o agendamento
+    if nullif(p->>'cnh_validade', '')::date < v_h.data then
+      raise exception 'Sua CNH estará vencida na data do checklist. Renove antes de agendar.';
+    end if;
+    if nullif(p->>'mopp_validade', '')::date < v_h.data then
+      raise exception 'Seu MOPP estará vencido na data do checklist. Renove antes de agendar.';
+    end if;
+    if nullif(p->>'nr20_validade', '')::date < v_h.data then
+      raise exception 'Seu NR-20 estará vencido na data do checklist. Renove antes de agendar.';
+    end if;
+    if nullif(p->>'nr35_validade', '')::date < v_h.data then
+      raise exception 'Seu NR-35 estará vencido na data do checklist. Renove antes de agendar.';
     end if;
   else
     -- curso não usa placas nem documentos do caminhão
@@ -213,7 +234,7 @@ begin
   insert into public.agendamentos (
     horario_id, codigo, nome, cpf, telefone, email, transportadora, companhia,
     placa_cavalo, placa_reboque1, placa_reboque2, placa_reboque3,
-    cnh_validade, mopp_validade, nr20_validade, nr35_validade
+    cnh_validade, mopp_validade, nr20_validade, nr35_validade, consentimento_em
   ) values (
     v_h.id, v_codigo, upper(trim(p->>'nome')), v_cpf,
     nullif(regexp_replace(coalesce(p->>'telefone', ''), '\D', '', 'g'), ''),
@@ -223,7 +244,8 @@ begin
     case when v_check then nullif(p->>'cnh_validade',  '')::date end,
     case when v_check then nullif(p->>'mopp_validade', '')::date end,
     case when v_check then nullif(p->>'nr20_validade', '')::date end,
-    case when v_check then nullif(p->>'nr35_validade', '')::date end
+    case when v_check then nullif(p->>'nr35_validade', '')::date end,
+    now()
   );
 
   return v_codigo;
@@ -295,6 +317,24 @@ begin
   end loop;
   return n;
 end $$;
+
+-- LGPD: apaga agendamentos e horários com mais de p_meses meses
+create or replace function public.limpar_dados_antigos(p_meses int default 12)
+returns int language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  -- roda pelo agendador do banco (sem usuário) ou por um operador logado
+  if auth.uid() is not null and not public.eh_operador() then
+    raise exception 'Acesso negado.';
+  end if;
+  delete from public.horarios
+   where data < (public.agora_sp()::date - make_interval(months => greatest(p_meses, 1)));
+  get diagnostics n = row_count;   -- agendamentos saem junto (on delete cascade)
+  return n;
+end $$;
+
+revoke execute on function public.limpar_dados_antigos(int) from public, anon;
+grant  execute on function public.limpar_dados_antigos(int) to authenticated;
 
 -- ---------- Permissões de execução -----------------------------------
 

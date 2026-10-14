@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6b1f66">
+  <title>Política de privacidade · Agenda BPA</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap-estreito marca">
+      <img src="icon.svg" alt="" width="40" height="40">
+      <div>
+        <h1 data-nome-app>Agenda BPA</h1>
+        <small>Política de privacidade</small>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap-estreito">
+    <article class="card texto">
+      <p><a href="index.html">← Voltar para o agendamento</a></p>
+
+      <h2>Como usamos seus dados</h2>
+      <p>Este sistema serve para agendar o checklist de caminhões e o <span data-nome-curso>Curso Operação Sem Derrame</span>
+        no <span data-nome-local>terminal</span>. Seguimos a Lei Geral de Proteção de Dados (Lei nº 13.709/2018).</p>
+
+      <h3>Quais dados coletamos</h3>
+      <ul>
+        <li>Nome completo, CPF, telefone e e-mail (estes dois últimos são opcionais).</li>
+        <li>Transportadora e companhia.</li>
+        <li>No checklist: placas do conjunto e datas de validade da CNH, do MOPP, do NR-20 e do NR-35.</li>
+        <li>Data e hora do agendamento, da chegada na portaria e o resultado do checklist ou do curso.</li>
+      </ul>
+
+      <h3>Para que usamos</h3>
+      <ul>
+        <li>Organizar a fila de checklist e as turmas do curso.</li>
+        <li>Conferir documentos e controlar o acesso ao terminal com segurança.</li>
+        <li>Emitir o certificado de quem concluir o curso.</li>
+      </ul>
+      <p>Seus dados <b>não são vendidos nem usados para propaganda</b>. Só a equipe responsável pelo
+        agendamento consegue ver as informações, com login e senha.</p>
+
+      <h3>Por quanto tempo guardamos</h3>
+      <p>Os agendamentos são apagados automaticamente <b>12 meses</b> depois da data marcada.</p>
+
+      <h3>Seus direitos</h3>
+      <p>Você pode pedir para ver, corrigir ou apagar seus dados a qualquer momento. Também pode cancelar
+        o agendamento pela aba <b>Meu agendamento</b>. Para outros pedidos, fale com a portaria pelos contatos abaixo.</p>
+
+      <h3>Armazenamento</h3>
+      <p>Os dados ficam em um banco de dados na nuvem, com acesso protegido e conexão criptografada (HTTPS).
+        No seu celular, o site só guarda seus dados se você marcar "Lembrar meus dados".</p>
+    </article>
+  </main>
+
+  <footer class="rodape">
+    <div class="wrap-estreito" id="rodape"></div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="common.js"></script>
+</body>
+</html>

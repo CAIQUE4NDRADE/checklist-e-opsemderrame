@@ -4,15 +4,25 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#6b1f66">
-  <title>Agendar Checklist</title>
+  <meta name="description" content="Agende o checklist do caminhão ou o Curso Operação Sem Derrame pelo celular.">
+  <title>Agenda BPA</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Agenda BPA">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topo">
-    <div class="wrap-estreito">
+    <div class="wrap-estreito marca">
+      <img src="icon.svg" alt="" width="40" height="40">
       <div>
-        <h1>Agendamento de Checklist</h1>
-        <small data-nome-local></small>
+        <h1 data-nome-app>Agenda BPA</h1>
+        <small>Checklist e curso · <span data-nome-local></span></small>
       </div>
     </div>
   </header>
@@ -21,6 +31,7 @@
     <div class="tabs" role="tablist">
       <button class="tab" role="tab" aria-selected="true" data-aba="agendar">Agendar</button>
       <button class="tab" role="tab" aria-selected="false" data-aba="consultar">Meu agendamento</button>
+      <button class="tab" role="tab" aria-selected="false" data-aba="orientacoes">Antes de vir</button>
     </div>
 
     <!-- ========== AGENDAR ========== -->
@@ -133,9 +144,14 @@
         </div>
         </div><!-- /bloco-caminhao -->
 
-        <label style="display:flex;gap:8px;align-items:flex-start;font-weight:500;margin-top:16px">
-          <input type="checkbox" id="f-lembrar" style="width:auto;margin-top:3px" checked>
-          Lembrar meus dados neste celular para o próximo agendamento
+        <label class="check" for="f-consentimento">
+          <input type="checkbox" id="f-consentimento">
+          <span>Autorizo o uso dos meus dados para este agendamento e para o controle de acesso ao terminal,
+            conforme a <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a>.</span>
+        </label>
+        <label class="check" for="f-lembrar">
+          <input type="checkbox" id="f-lembrar" checked>
+          <span>Lembrar meus dados neste celular para o próximo agendamento</span>
         </label>
 
         <p class="erro" id="form-erro" role="alert"></p>
@@ -151,6 +167,11 @@
         <div class="qr-box" id="ok-qr"></div>
         <p class="muted">Tire um print desta tela e apresente na portaria.<br>
           Para consultar ou cancelar, use a aba <b>Meu agendamento</b> com seu CPF e este código.</p>
+        <div class="acoes acoes-centro">
+          <button type="button" id="btn-ics">📅 Adicionar à minha agenda</button>
+          <a class="btn" id="btn-maps" target="_blank" rel="noopener">📍 Como chegar</a>
+        </div>
+        <div class="aviso" id="ok-orientacao"></div>
         <button class="btn-bloco" id="btn-novo">Fazer outro agendamento</button>
       </div>
     </section>
@@ -170,7 +191,23 @@
 
       <div class="card oculto" id="consulta-res"></div>
     </section>
+
+    <!-- ========== ORIENTAÇÕES ========== -->
+    <section id="aba-orientacoes" class="oculto">
+      <div class="card">
+        <h2>Checklist do caminhão</h2>
+        <ol class="orientacoes" id="ori-checklist"></ol>
+      </div>
+      <div class="card">
+        <h2 data-nome-curso>Curso Operação Sem Derrame</h2>
+        <ol class="orientacoes" id="ori-curso"></ol>
+      </div>
+    </section>
   </main>
+
+  <footer class="rodape">
+    <div class="wrap-estreito" id="rodape"></div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

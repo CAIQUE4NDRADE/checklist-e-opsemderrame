@@ -1,7 +1,7 @@
 // Painel do operador: checklist do dia, horários e QR code
 (function () {
   const { sb, hojeSP, somarDias, fmtData, fmtDataLonga, fmtHora, mascaraCPF, esc,
-          situacaoDoc, msgErro, toast } = window.App;
+          situacaoDoc, msgErro, toast, cfg } = window.App;
 
   const $ = (id) => document.getElementById(id);
   const ROTULOS = {
@@ -76,8 +76,10 @@
   document.querySelectorAll(".tab").forEach((t) =>
     t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
-      ["dia", "horarios", "qr"].forEach((a) =>
+      ["dia", "checkin", "horarios", "relatorios", "qr"].forEach((a) =>
         $("aba-" + a).classList.toggle("oculto", t.dataset.aba !== a));
+      if (t.dataset.aba !== "checkin") pararCamera();
+      if (t.dataset.aba === "checkin") setTimeout(() => $("ci-codigo").focus(), 50);
       if (t.dataset.aba === "horarios") carregarHorarios();
       if (t.dataset.aba === "qr") montarQR();
       if (t.dataset.aba === "dia") carregarDia();
@@ -139,6 +141,8 @@
     const conta = (s) => ativos.filter((a) => a.status === s).length;
 
     const curso = tipoDia() === "curso_osd";
+    $("d-presenca").classList.toggle("oculto", !curso || !ativos.length);
+    $("d-certificados").classList.toggle("oculto", !curso || !conta("concluido"));
     $("d-kpis").innerHTML = (curso
       ? [["Inscritos", ativos.length], ["Aguardando", conta("fila")], ["Concluíram", conta("concluido")], ["Faltas", conta("pendencia")]]
       : [["Agendados", ativos.length], ["Na fila", conta("fila")], ["Concluídos", conta("concluido")], ["Pendências", conta("pendencia")]]
@@ -193,8 +197,13 @@
             ${contato ? `<div class="agend-info">${contato}</div>` : ""}
             ${placas ? `<div class="placas">${placas}</div>` : ""}
           </div>
-          <div>
+          <div class="agend-lado">
             <select class="sel-status st-${esc(a.status)}" data-acao="status" aria-label="Status">${opcoes}</select>
+            ${a.checkin_em
+              ? `<span class="chegou">Chegou ${esc(horaDe(a.checkin_em))}</span>`
+              : a.status === "fila" ? `<button class="btn-peq nao-imprimir" data-acao="checkin">Registrar chegada</button>` : ""}
+            ${curso && a.status === "concluido"
+              ? `<button class="btn-peq nao-imprimir" data-acao="certificado">Certificado</button>` : ""}
           </div>
         </div>
         ${curso ? "" : `<div class="docs">${docs}</div>`}
@@ -225,7 +234,21 @@
   });
 
   $("d-lista").addEventListener("click", async (e) => {
-    if (e.target.dataset.acao !== "gravar-obs") return;
+    const acao = e.target.dataset.acao;
+    if (acao === "checkin" || acao === "certificado") {
+      const id = Number(e.target.closest(".agend").dataset.id);
+      const ag = horariosDia.flatMap((h) => h.agendamentos).find((a) => a.id === id);
+      if (!ag) return;
+      if (acao === "checkin") {
+        e.target.disabled = true;
+        if (await registrarChegada(ag.id)) carregarDia(true);
+        else e.target.disabled = false;
+      } else {
+        gerarCertificados([ag], $("d-data").value);
+      }
+      return;
+    }
+    if (acao !== "gravar-obs") return;
     const card = e.target.closest(".agend");
     const id = Number(card.dataset.id);
     const obs = card.querySelector("textarea").value.trim() || null;
@@ -372,6 +395,324 @@
     document.querySelectorAll("[data-print-obs]").forEach((el) => (el.style.display = "block")));
   window.addEventListener("afterprint", () =>
     document.querySelectorAll("[data-print-obs]").forEach((el) => (el.style.display = "none")));
+
+  // ================= Utilidades =================
+  const horaDe = (iso) =>
+    new Date(iso).toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo", hour: "2-digit", minute: "2-digit" });
+
+  const scriptsCarregados = {};
+  function carregarScript(url) {
+    if (!scriptsCarregados[url]) {
+      scriptsCarregados[url] = new Promise((ok, falha) => {
+        const s = document.createElement("script");
+        s.src = url;
+        s.onload = ok;
+        s.onerror = () => { delete scriptsCarregados[url]; falha(new Error("Não foi possível carregar um componente. Verifique a internet.")); };
+        document.head.appendChild(s);
+      });
+    }
+    return scriptsCarregados[url];
+  }
+  const LIB_QR_LEITOR = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
+  const LIB_XLSX = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  const LIB_PDF = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+
+  async function registrarChegada(id) {
+    const { error } = await sb.from("agendamentos").update({ checkin_em: new Date().toISOString() }).eq("id", id);
+    if (error) { toast(msgErro(error), "erro"); return false; }
+    toast("Chegada registrada.", "ok");
+    return true;
+  }
+
+  // ================= Check-in =================
+  let leitor = null;
+
+  async function abrirCamera() {
+    $("ci-erro").textContent = "";
+    try {
+      await carregarScript(LIB_QR_LEITOR);
+      leitor = new Html5Qrcode("leitor");
+      await leitor.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 230, height: 230 } },
+        (texto) => {
+          const cod = String(texto).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 6);
+          if (cod.length === 6) { pararCamera(); $("ci-codigo").value = cod; buscarCodigo(cod); }
+        }, () => {});
+      $("ci-camera").classList.add("oculto");
+      $("ci-parar").classList.remove("oculto");
+    } catch (err) {
+      $("ci-erro").textContent = /Permission|NotAllowed/i.test(String(err))
+        ? "O navegador bloqueou a câmera. Libere o acesso à câmera para este site e tente de novo."
+        : "Não foi possível abrir a câmera: " + (err.message || err);
+      leitor = null;
+    }
+  }
+
+  function pararCamera() {
+    if (leitor) { leitor.stop().catch(() => {}).finally(() => { try { leitor.clear(); } catch (_) {} leitor = null; }); }
+    $("ci-camera").classList.remove("oculto");
+    $("ci-parar").classList.add("oculto");
+  }
+
+  $("ci-camera").addEventListener("click", abrirCamera);
+  $("ci-parar").addEventListener("click", pararCamera);
+  $("ci-codigo").addEventListener("input", (e) => (e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "")));
+  $("ci-form").addEventListener("submit", (e) => { e.preventDefault(); buscarCodigo($("ci-codigo").value.trim()); });
+
+  async function buscarCodigo(cod) {
+    const res = $("ci-resultado");
+    $("ci-erro").textContent = "";
+    res.innerHTML = "";
+    if (cod.length !== 6) { $("ci-erro").textContent = "O código tem 6 caracteres."; return; }
+
+    const { data, error } = await sb.from("agendamentos")
+      .select("*, horarios!inner(tipo, data, hora_inicio, hora_fim)")
+      .eq("codigo", cod)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (error) { $("ci-erro").textContent = msgErro(error); return; }
+    if (!data.length) { $("ci-erro").textContent = `Nenhum agendamento com o código ${cod}.`; return; }
+
+    const a = data[0];
+    const h = a.horarios;
+    const hoje = hojeSP();
+    const R = ROTULOS[h.tipo];
+    const avisos = [];
+    if (a.status === "cancelado") avisos.push(["erro", "Este agendamento foi cancelado."]);
+    if (h.data < hoje) avisos.push(["erro", `Agendamento de outro dia (${fmtData(h.data)}), já passou.`]);
+    if (h.data > hoje) avisos.push(["alerta", `Agendado para ${fmtData(h.data)}, não para hoje.`]);
+    if (a.checkin_em) avisos.push(["ok", `Chegada já registrada às ${horaDe(a.checkin_em)}.`]);
+    if (h.tipo === "checklist") {
+      [["CNH", a.cnh_validade], ["MOPP", a.mopp_validade], ["NR-20", a.nr20_validade], ["NR-35", a.nr35_validade]]
+        .forEach(([n, d]) => { if (d && d < hoje) avisos.push(["erro", `${n} vencido em ${fmtData(d)}.`]); });
+    }
+    const podeRegistrar = !a.checkin_em && a.status !== "cancelado" && h.data === hoje;
+    const placas = [a.placa_cavalo, a.placa_reboque1, a.placa_reboque2, a.placa_reboque3].filter(Boolean).map(esc).join(" / ");
+
+    res.innerHTML = `
+      <div class="card ci-card">
+        <span class="chip${h.tipo === "curso_osd" ? " curso" : ""}">${esc(NOME_TIPO[h.tipo])}</span>
+        <h2 style="margin:10px 0 2px">${esc(a.nome)}</h2>
+        <div class="agend-info">CPF ${esc(mascaraCPF(a.cpf))} · ${esc(a.transportadora)} · ${esc(a.companhia)}</div>
+        <div class="agend-info"><b>${fmtData(h.data)}</b> · ${fmtHora(h.hora_inicio)} às ${fmtHora(h.hora_fim)}
+          · status <span class="status st-${esc(a.status)}">${esc(R[a.status])}</span></div>
+        ${placas ? `<div class="placas">${placas}</div>` : ""}
+        ${avisos.map(([t, m]) => `<div class="ci-aviso ci-${t}">${esc(m)}</div>`).join("")}
+        <div class="acoes">
+          ${podeRegistrar ? `<button class="btn-primario" id="ci-registrar">Registrar chegada</button>` : ""}
+          <button id="ci-abrir">Abrir na agenda do dia</button>
+        </div>
+      </div>`;
+
+    $("ci-registrar")?.addEventListener("click", async (ev) => {
+      ev.target.disabled = true;
+      if (await registrarChegada(a.id)) buscarCodigo(cod);
+      else ev.target.disabled = false;
+    });
+    $("ci-abrir").addEventListener("click", () => {
+      $("d-tipo").value = h.tipo;
+      $("d-data").value = h.data;
+      $("d-busca").value = a.codigo;
+      document.querySelector('.tab[data-aba="dia"]').click();
+    });
+  }
+
+  // ================= Curso: lista de presença e certificados =================
+  function participantesDoDia() {
+    return horariosDia.flatMap((h) => h.agendamentos.map((a) => ({ ...a, _h: h })))
+      .filter((a) => a.status !== "cancelado")
+      .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  }
+
+  $("d-presenca").addEventListener("click", () => {
+    const lista = participantesDoDia();
+    const data = $("d-data").value;
+    const h = horariosDia[0];
+    const linhas = lista.map((a, i) => `<tr><td>${i + 1}</td><td>${esc(a.nome)}</td><td>${esc(mascaraCPF(a.cpf))}</td>
+      <td>${esc(a.transportadora)}</td><td></td></tr>`).join("");
+    const vazias = Array.from({ length: 5 }, (_, i) =>
+      `<tr><td>${lista.length + i + 1}</td><td></td><td></td><td></td><td></td></tr>`).join("");
+    const w = window.open("", "_blank");
+    if (!w) { toast("Libere pop-ups para este site para abrir a lista.", "erro"); return; }
+    w.document.write(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+      <title>Lista de presença ${fmtData(data)}</title>
+      <style>
+        body{font-family:system-ui,Segoe UI,Roboto,sans-serif;margin:24px;color:#000}
+        h1{font-size:20px;margin:0 0 4px} p{margin:0 0 14px;font-size:13px}
+        table{width:100%;border-collapse:collapse;font-size:13px}
+        th,td{border:1px solid #444;padding:8px 6px;text-align:left;height:22px}
+        th{background:#eee} td:first-child{width:28px;text-align:center} td:last-child{width:32%}
+        .ass{margin-top:40px;display:flex;justify-content:space-between;gap:40px;font-size:13px}
+        .ass div{flex:1;border-top:1px solid #000;padding-top:4px;text-align:center}
+        @media print{body{margin:10mm}}
+      </style></head><body>
+      <h1>Lista de presença — ${esc(cfg.NOME_CURSO || "Curso Operação Sem Derrame")}</h1>
+      <p>${esc(cfg.NOME_LOCAL || "")} · ${esc(fmtDataLonga(data))}${h ? ` · ${fmtHora(h.hora_inicio)} às ${fmtHora(h.hora_fim)}` : ""}
+        · Carga horária: ${esc(cfg.CURSO_CARGA_HORARIA || "")}</p>
+      <table><thead><tr><th>#</th><th>Nome</th><th>CPF</th><th>Transportadora</th><th>Assinatura</th></tr></thead>
+      <tbody>${linhas}${vazias}</tbody></table>
+      <div class="ass"><div>Instrutor</div><div>${esc(cfg.CERTIFICADO_RESPONSAVEL || "Responsável")}</div></div>
+      <script>window.onload=()=>window.print()<\/script></body></html>`);
+    w.document.close();
+  });
+
+  $("d-certificados").addEventListener("click", () => {
+    const concl = participantesDoDia().filter((a) => a.status === "concluido");
+    if (!concl.length) { toast("Ninguém com status CONCLUÍDO nesta turma.", "erro"); return; }
+    gerarCertificados(concl, $("d-data").value);
+  });
+
+  async function gerarCertificados(lista, data) {
+    try { await carregarScript(LIB_PDF); } catch (err) { toast(err.message, "erro"); return; }
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const W = 297, H = 210;
+    const roxo = [107, 31, 102], ouro = [214, 154, 40];
+    const curso = cfg.NOME_CURSO || "Curso Operação Sem Derrame";
+
+    lista.forEach((a, i) => {
+      if (i > 0) pdf.addPage();
+      pdf.setDrawColor(...roxo); pdf.setLineWidth(2.2); pdf.rect(10, 10, W - 20, H - 20);
+      pdf.setDrawColor(...ouro); pdf.setLineWidth(0.6); pdf.rect(14, 14, W - 28, H - 28);
+
+      pdf.setTextColor(...roxo); pdf.setFont("helvetica", "bold"); pdf.setFontSize(34);
+      pdf.text("CERTIFICADO", W / 2, 46, { align: "center" });
+      pdf.setFontSize(13); pdf.setFont("helvetica", "normal"); pdf.setTextColor(80);
+      pdf.text("DE CONCLUSÃO", W / 2, 55, { align: "center" });
+
+      pdf.setTextColor(30); pdf.setFontSize(14);
+      pdf.text("Certificamos que", W / 2, 78, { align: "center" });
+      pdf.setFont("helvetica", "bold"); pdf.setFontSize(24); pdf.setTextColor(...roxo);
+      pdf.text(a.nome, W / 2, 92, { align: "center", maxWidth: W - 60 });
+
+      pdf.setFont("helvetica", "normal"); pdf.setFontSize(13); pdf.setTextColor(30);
+      const txt = `portador(a) do CPF ${mascaraCPF(a.cpf)}, da transportadora ${a.transportadora}, ` +
+        `concluiu o ${curso}, realizado em ${fmtData(data)} no ${cfg.NOME_LOCAL || "terminal"}, ` +
+        `com carga horária de ${cfg.CURSO_CARGA_HORARIA || "—"}.`;
+      pdf.text(pdf.splitTextToSize(txt, W - 80), W / 2, 108, { align: "center" });
+
+      pdf.setDrawColor(60); pdf.setLineWidth(0.3);
+      pdf.line(W / 2 - 55, 160, W / 2 + 55, 160);
+      pdf.setFontSize(11);
+      pdf.text(cfg.CERTIFICADO_RESPONSAVEL || "Responsável", W / 2, 166, { align: "center" });
+
+      pdf.setFontSize(9); pdf.setTextColor(110);
+      pdf.text(`Código de validação: ${a.codigo} · ${cfg.NOME_APP || "Agenda BPA"}`, W / 2, 185, { align: "center" });
+    });
+
+    const nome = lista.length === 1
+      ? `certificado-${lista[0].nome.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`
+      : `certificados-${data}.pdf`;
+    pdf.save(nome);
+    toast(lista.length === 1 ? "Certificado gerado." : `${lista.length} certificados gerados.`, "ok");
+  }
+
+  // ================= Relatórios =================
+  $("r-de").value = hojeSP().slice(0, 8) + "01";
+  $("r-ate").value = hojeSP();
+
+  $("form-rel").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const erro = $("rel-erro");
+    erro.textContent = "";
+    const de = $("r-de").value, ate = $("r-ate").value, tipo = $("r-tipo").value;
+    if (!de || !ate || ate < de) { erro.textContent = "Confira as datas: a data final não pode ser antes da inicial."; return; }
+
+    const btn = e.submitter || $("form-rel").querySelector("button[type=submit]");
+    btn.disabled = true; btn.textContent = "Gerando...";
+    try {
+      await carregarScript(LIB_XLSX);
+      let linhas = [], pagina = 0;
+      while (true) {   // busca em páginas de 1000
+        let q = sb.from("agendamentos")
+          .select("*, horarios!inner(tipo, data, hora_inicio, hora_fim)")
+          .gte("horarios.data", de).lte("horarios.data", ate)
+          .range(pagina * 1000, pagina * 1000 + 999);
+        if (tipo) q = q.eq("horarios.tipo", tipo);
+        const { data, error } = await q;
+        if (error) throw error;
+        linhas = linhas.concat(data);
+        if (data.length < 1000) break;
+        pagina++;
+      }
+      linhas.sort((a, b) => (a.horarios.data + a.horarios.hora_inicio).localeCompare(b.horarios.data + b.horarios.hora_inicio));
+
+      const conta = (s) => linhas.filter((a) => a.status === s).length;
+      $("rel-kpis").innerHTML = [["Registros", linhas.length], ["Concluídos", conta("concluido")],
+        ["Pendências/faltas", conta("pendencia")], ["Cancelados", conta("cancelado")]]
+        .map(([t, n]) => `<div class="kpi"><b>${n}</b><span>${t}</span></div>`).join("");
+
+      if (!linhas.length) { erro.textContent = "Nenhum agendamento nesse período."; return; }
+
+      const dt = (d) => (d ? fmtData(d) : "");
+      const tabela = linhas.map((a) => ({
+        "Tipo": NOME_TIPO[a.horarios.tipo],
+        "Data": dt(a.horarios.data),
+        "Horário": `${fmtHora(a.horarios.hora_inicio)}–${fmtHora(a.horarios.hora_fim)}`,
+        "Status": ROTULOS[a.horarios.tipo][a.status],
+        "Chegada": a.checkin_em ? horaDe(a.checkin_em) : "",
+        "Nome": a.nome,
+        "CPF": mascaraCPF(a.cpf),
+        "Telefone": a.telefone || "",
+        "E-mail": a.email || "",
+        "Transportadora": a.transportadora,
+        "Companhia": a.companhia,
+        "Placa cavalo": a.placa_cavalo || "",
+        "Reboque 1": a.placa_reboque1 || "",
+        "Reboque 2": a.placa_reboque2 || "",
+        "Reboque 3": a.placa_reboque3 || "",
+        "CNH validade": dt(a.cnh_validade),
+        "MOPP validade": dt(a.mopp_validade),
+        "NR-20 validade": dt(a.nr20_validade),
+        "NR-35 validade": dt(a.nr35_validade),
+        "Observação": a.obs || "",
+        "Código": a.codigo,
+      }));
+
+      // Resumo por dia
+      const porDia = {};
+      linhas.forEach((a) => {
+        const k = a.horarios.data + "|" + a.horarios.tipo;
+        porDia[k] = porDia[k] || { "Data": dt(a.horarios.data), "Tipo": NOME_TIPO[a.horarios.tipo],
+          "Agendados": 0, "Concluídos": 0, "Pendências/faltas": 0, "Cancelados": 0, "Chegaram": 0 };
+        const r = porDia[k];
+        if (a.status !== "cancelado") r["Agendados"]++;
+        if (a.status === "concluido") r["Concluídos"]++;
+        if (a.status === "pendencia") r["Pendências/faltas"]++;
+        if (a.status === "cancelado") r["Cancelados"]++;
+        if (a.checkin_em) r["Chegaram"]++;
+      });
+
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(tabela);
+      ws["!cols"] = Object.keys(tabela[0]).map((k) => ({ wch: Math.min(40, Math.max(k.length + 2,
+        ...tabela.slice(0, 200).map((r) => String(r[k]).length + 1))) }));
+      ws["!autofilter"] = { ref: ws["!ref"] };
+      XLSX.utils.book_append_sheet(wb, ws, "Agendamentos");
+      const ws2 = XLSX.utils.json_to_sheet(Object.values(porDia));
+      ws2["!cols"] = [{ wch: 12 }, { wch: 30 }, { wch: 11 }, { wch: 11 }, { wch: 18 }, { wch: 11 }, { wch: 10 }];
+      XLSX.utils.book_append_sheet(wb, ws2, "Resumo por dia");
+      XLSX.writeFile(wb, `agenda-bpa_${de}_a_${ate}.xlsx`);
+      toast("Planilha gerada.", "ok");
+    } catch (err) {
+      erro.textContent = msgErro(err);
+    } finally {
+      btn.disabled = false; btn.textContent = "Baixar Excel";
+    }
+  });
+
+  // ================= LGPD =================
+  $("lgpd-limpar").addEventListener("click", () => {
+    $("lgpd-limpar").classList.add("oculto");
+    $("lgpd-confirmar").classList.remove("oculto");
+    setTimeout(() => { $("lgpd-confirmar").classList.add("oculto"); $("lgpd-limpar").classList.remove("oculto"); }, 8000);
+  });
+  $("lgpd-confirmar").addEventListener("click", async () => {
+    $("lgpd-confirmar").classList.add("oculto");
+    $("lgpd-limpar").classList.remove("oculto");
+    const { data, error } = await sb.rpc("limpar_dados_antigos", { p_meses: 12 });
+    if (error) { toast(msgErro(error), "erro"); return; }
+    toast(`${data} horário(s) antigo(s) apagado(s), com seus agendamentos.`, "ok");
+  });
 
   sb.auth.onAuthStateChange((evt) => { if (evt === "SIGNED_OUT") mostrarLogin(); });
 

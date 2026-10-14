@@ -2,7 +2,7 @@
 (function () {
   const { cfg, sb, hojeSP, somarDias, fmtDataLonga, fmtHora, soDigitos,
           mascaraCPF, cpfValido, mascaraTelefone, normPlaca, placaValida, esc,
-          msgErro, toast } = window.App;
+          msgErro, toast, textoOri, baixarICS } = window.App;
 
   const $ = (id) => document.getElementById(id);
   const CHAVE_LEMBRAR = "agenda_checklist_motorista";
@@ -17,7 +17,11 @@
   let slotSel = null;
   let datasCurso = [];
 
-  document.querySelectorAll("[data-nome-curso]").forEach((el) => (el.textContent = NOME_TIPO.curso_osd));
+  // Orientações
+  const preencherLista = (id, itens) =>
+    ($(id).innerHTML = (itens || []).map((t) => `<li>${esc(textoOri(t))}</li>`).join(""));
+  preencherLista("ori-checklist", cfg.ORIENTACOES_CHECKLIST);
+  preencherLista("ori-curso", cfg.ORIENTACOES_CURSO);
 
   const mostrarPasso = (id) =>
     ["passo-tipo", "passo-horario", "passo-dados", "passo-ok"].forEach((p) => $(p).classList.toggle("oculto", p !== id));
@@ -26,8 +30,8 @@
   document.querySelectorAll(".tab").forEach((t) =>
     t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
-      $("aba-agendar").classList.toggle("oculto", t.dataset.aba !== "agendar");
-      $("aba-consultar").classList.toggle("oculto", t.dataset.aba !== "consultar");
+      ["agendar", "consultar", "orientacoes"].forEach((a) =>
+        $("aba-" + a).classList.toggle("oculto", t.dataset.aba !== a));
     })
   );
 
@@ -213,6 +217,12 @@
       });
     }
 
+    if (!problemas.length && !$("f-consentimento").checked) {
+      erro.textContent = "Para agendar, marque a autorização de uso dos dados.";
+      $("f-consentimento").focus();
+      return;
+    }
+
     if (problemas.length) {
       erro.textContent = "Confira: " + problemas.join(", ") + ".";
       document.querySelector("#passo-dados .invalido")?.focus();
@@ -224,7 +234,7 @@
     btn.textContent = "Enviando...";
 
     const payload = { ...dados, cpf: soDigitos(dados.cpf), telefone: soDigitos(dados.telefone),
-                      horario_id: slotSel.id };
+                      horario_id: slotSel.id, consentimento: true };
     const { data: codigo, error } = await sb.rpc("agendar", { p: payload });
 
     btn.disabled = false;
@@ -247,6 +257,28 @@
     qr.innerHTML = "";
     // QR com o código: a portaria lê e busca no painel
     new QRCode(qr, { text: codigo, width: 160, height: 160, correctLevel: QRCode.CorrectLevel.M });
+
+    const curso = tipo === "curso_osd";
+    $("ok-orientacao").innerHTML = `<b>Antes de vir:</b> ${esc(textoOri(
+      (curso ? cfg.ORIENTACOES_CURSO : cfg.ORIENTACOES_CHECKLIST)?.[0] || ""))}
+      <a href="#" id="ver-orientacoes">Ver todas as orientações</a>`;
+    $("ver-orientacoes").addEventListener("click", (e) => {
+      e.preventDefault();
+      document.querySelector('.tab[data-aba="orientacoes"]').click();
+      window.scrollTo({ top: 0 });
+    });
+
+    const mapa = $("btn-maps");
+    mapa.classList.toggle("oculto", !cfg.MAPS_URL);
+    mapa.href = cfg.MAPS_URL || "#";
+
+    const ag = { data: diaSel, inicio: slotSel.hora_inicio, fim: slotSel.hora_fim };
+    $("btn-ics").onclick = () => baixarICS({
+      titulo: `${NOME_TIPO[tipo]} — ${cfg.NOME_LOCAL || ""}`,
+      ...ag,
+      local: cfg.ENDERECO || cfg.NOME_LOCAL || "",
+      descricao: `Código de confirmação: ${codigo}. Chegue com ${cfg.CHEGAR_ANTES_MIN || 15} minutos de antecedência.`,
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -310,6 +342,7 @@
   carregarLembrados();
   // Link direto: index.html#curso abre já no curso; #checklist no checklist
   const atalho = (location.hash || "").replace("#", "");
+  if (atalho === "orientacoes") document.querySelector('.tab[data-aba="orientacoes"]').click();
   if (atalho === "curso") escolherTipo("curso_osd");
   else if (atalho === "checklist") escolherTipo("checklist");
 })();

@@ -104,10 +104,67 @@
     el._t = setTimeout(() => el.classList.remove("show"), 3500);
   }
 
-  // Preenche o nome do local em elementos com data-nome-local
+  // Preenche nomes configuráveis
   document.querySelectorAll("[data-nome-local]").forEach((el) => {
-    el.textContent = cfg.NOME_LOCAL || "Agenda de Checklist";
+    el.textContent = cfg.NOME_LOCAL || "";
   });
+  document.querySelectorAll("[data-nome-app]").forEach((el) => {
+    el.textContent = cfg.NOME_APP || "Agenda BPA";
+  });
+  document.querySelectorAll("[data-nome-curso]").forEach((el) => {
+    el.textContent = cfg.NOME_CURSO || "Curso Operação Sem Derrame";
+  });
+
+  // Texto das orientações (troca {CHEGAR} pelos minutos configurados)
+  const textoOri = (t) => String(t).replace("{CHEGAR}", cfg.CHEGAR_ANTES_MIN || 15);
+
+  // Rodapé com contato e endereço
+  const rodape = document.getElementById("rodape");
+  if (rodape) {
+    const tel = (n) => `<a href="tel:+55${soDigitos(n)}">${esc(n)}</a>`;
+    const zap = (n) => `<a href="https://wa.me/55${soDigitos(n)}" target="_blank" rel="noopener">${esc(n)}</a>`;
+    const linhas = [
+      `<b>${esc(cfg.NOME_APP || "Agenda BPA")}</b> · ${esc(cfg.NOME_LOCAL || "")}`,
+      cfg.ENDERECO ? `${esc(cfg.ENDERECO)}${cfg.MAPS_URL ? ` · <a href="${esc(cfg.MAPS_URL)}" target="_blank" rel="noopener">ver no mapa</a>` : ""}` : "",
+      cfg.TELEFONE_PORTARIA ? `Portaria: ${tel(cfg.TELEFONE_PORTARIA)}` : "",
+      cfg.WHATSAPP_PORTARIA ? `WhatsApp: ${zap(cfg.WHATSAPP_PORTARIA)}` : "",
+      cfg.HORARIO_ATENDIMENTO ? `Atendimento: ${esc(cfg.HORARIO_ATENDIMENTO)}` : "",
+      `<a href="privacidade.html">Política de privacidade</a>`,
+    ].filter(Boolean);
+    rodape.innerHTML = linhas.map((l) => `<div>${l}</div>`).join("");
+  }
+
+  // Arquivo de calendário (.ics) para "Adicionar à minha agenda"
+  function baixarICS({ titulo, data, inicio, fim, local, descricao }) {
+    const dt = (d, h) => d.replace(/-/g, "") + "T" + h.slice(0, 5).replace(":", "") + "00";
+    const limpa = (t) => String(t || "").replace(/[,;\\]/g, (c) => "\\" + c).replace(/\n/g, "\\n");
+    const ics = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Agenda BPA//PT-BR", "CALSCALE:GREGORIAN",
+      "BEGIN:VEVENT",
+      `UID:${Date.now()}@agenda-bpa`,
+      `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, "").slice(0, 15)}Z`,
+      `DTSTART;TZID=America/Sao_Paulo:${dt(data, inicio)}`,
+      `DTEND;TZID=America/Sao_Paulo:${dt(data, fim)}`,
+      `SUMMARY:${limpa(titulo)}`,
+      `LOCATION:${limpa(local)}`,
+      `DESCRIPTION:${limpa(descricao)}`,
+      "BEGIN:VALARM", "TRIGGER:-PT2H", "ACTION:DISPLAY", `DESCRIPTION:${limpa(titulo)}`, "END:VALARM",
+      "END:VEVENT", "END:VCALENDAR",
+    ].join("\r\n");
+    const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "agendamento.ics";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  }
+
+  // Permite instalar como app (ícone na tela inicial)
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
 
   if (cfg.SUPABASE_URL.includes("SEU-PROJETO")) {
     console.warn("Configure SUPABASE_URL e SUPABASE_ANON_KEY em config.js");
@@ -116,6 +173,6 @@
   window.App = {
     cfg, sb, hojeSP, somarDias, fmtData, fmtDataLonga, fmtHora, soDigitos,
     mascaraCPF, cpfValido, mascaraTelefone, normPlaca, placaValida, esc,
-    situacaoDoc, msgErro, toast,
+    situacaoDoc, msgErro, toast, textoOri, baixarICS,
   };
 })();

@@ -5,15 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#6b1f66">
-  <title>Painel do Checklist</title>
+  <title>Painel · Agenda BPA</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="topo">
     <div class="wrap">
-      <div>
-        <h1>Painel do Checklist</h1>
-        <small data-nome-local></small>
+      <div class="marca">
+        <img src="icon.svg" alt="" width="40" height="40">
+        <div>
+          <h1><span data-nome-app>Agenda BPA</span> · Painel</h1>
+          <small data-nome-local></small>
+        </div>
       </div>
       <button class="btn-peq oculto" id="btn-sair">Sair</button>
     </div>
@@ -35,7 +43,9 @@
     <div id="tela-app" class="oculto">
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-aba="dia">Agenda do dia</button>
+        <button class="tab" role="tab" aria-selected="false" data-aba="checkin">Check-in</button>
         <button class="tab" role="tab" aria-selected="false" data-aba="horarios">Horários</button>
+        <button class="tab" role="tab" aria-selected="false" data-aba="relatorios">Relatórios</button>
         <button class="tab" role="tab" aria-selected="false" data-aba="qr">QR Code</button>
       </div>
 
@@ -62,6 +72,8 @@
               <button id="d-hoje">Hoje</button>
               <button id="d-atualizar">Atualizar</button>
               <button id="d-imprimir">Imprimir</button>
+              <button id="d-presenca" class="oculto">Lista de presença</button>
+              <button id="d-certificados" class="oculto">Certificados</button>
             </div>
           </div>
           <label style="display:flex;gap:8px;align-items:center;font-weight:500">
@@ -72,6 +84,29 @@
         <h2 id="d-titulo" style="font-size:1.1rem;margin:4px 0"></h2>
         <div class="kpis" id="d-kpis"></div>
         <div id="d-lista"></div>
+      </section>
+
+      <!-- ----- Check-in ----- -->
+      <section id="aba-checkin" class="oculto">
+        <div class="card wrap-estreito">
+          <h2>Check-in na portaria</h2>
+          <p class="muted" style="margin-top:0">Leia o QR code da tela de confirmação do motorista ou digite o código.</p>
+          <div id="leitor" class="leitor"></div>
+          <div class="acoes">
+            <button class="btn-primario" id="ci-camera">Abrir câmera</button>
+            <button id="ci-parar" class="oculto">Fechar câmera</button>
+          </div>
+          <form class="barra" id="ci-form" style="margin-top:12px" novalidate>
+            <div>
+              <label for="ci-codigo">Código</label>
+              <input id="ci-codigo" maxlength="6" autocapitalize="characters" placeholder="A1B2C3"
+                     style="font-family:ui-monospace,monospace;letter-spacing:.2em">
+            </div>
+            <div style="flex:0 0 auto"><button type="submit">Buscar</button></div>
+          </form>
+          <p class="erro" id="ci-erro" role="alert"></p>
+        </div>
+        <div class="wrap-estreito" id="ci-resultado"></div>
       </section>
 
       <!-- ----- Horários ----- -->
@@ -136,6 +171,44 @@
               <thead><tr><th>Horário</th><th>Vagas</th><th>Agendados</th><th>Situação</th><th></th></tr></thead>
               <tbody id="h-lista"></tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----- Relatórios ----- -->
+      <section id="aba-relatorios" class="oculto">
+        <form class="card" id="form-rel" novalidate>
+          <h2>Exportar para Excel</h2>
+          <div class="barra">
+            <div>
+              <label for="r-tipo">Agenda</label>
+              <select id="r-tipo">
+                <option value="">Checklist e curso</option>
+                <option value="checklist">Checklist do caminhão</option>
+                <option value="curso_osd">Curso Operação Sem Derrame</option>
+              </select>
+            </div>
+            <div>
+              <label for="r-de">De</label>
+              <input id="r-de" type="date">
+            </div>
+            <div>
+              <label for="r-ate">Até</label>
+              <input id="r-ate" type="date">
+            </div>
+            <div style="flex:0 0 auto"><button type="submit" class="btn-primario">Baixar Excel</button></div>
+          </div>
+          <p class="erro" id="rel-erro" role="alert"></p>
+          <div class="kpis" id="rel-kpis"></div>
+        </form>
+
+        <div class="card">
+          <h2>Privacidade (LGPD)</h2>
+          <p class="muted" style="margin-top:0">Apaga agendamentos e horários com mais de 12 meses.
+            Se você ativou a limpeza automática (arquivo 3_limpeza_automatica.sql), isso já acontece todo mês.</p>
+          <div class="acoes">
+            <button class="btn-perigo" id="lgpd-limpar">Apagar dados com mais de 12 meses</button>
+            <button class="oculto btn-perigo" id="lgpd-confirmar">Confirmar exclusão</button>
           </div>
         </div>
       </section>

@@ -29,7 +29,7 @@ Sistema de agendamento do **checklist de caminhões** e do **Curso Operação Se
 > Já rodou uma versão anterior do `schema.sql`? Rode o novo por cima: ele atualiza tabelas e funções sem apagar dados.
 
 1. Crie um projeto em [supabase.com](https://supabase.com) (o plano gratuito atende).
-2. Vá em **SQL Editor**, cole todo o conteúdo de `supabase/schema.sql` e clique em **Run**.
+2. Vá em **SQL Editor**, cole todo o conteúdo de `schema.sql` e clique em **Run**.
 3. Vá em **Authentication > Providers > Email** e **desative "Allow new users to sign up"**. Assim ninguém cria conta sozinho.
 4. Crie o usuário do operador em **Authentication > Users > Add user** (marque *Auto Confirm User*).
 5. Libere esse usuário como operador. No **SQL Editor**:
@@ -87,19 +87,25 @@ E abra `http://localhost:8000`.
 
 ## Estrutura
 
+Todos os arquivos ficam na raiz do repositório (sem pastas):
+
 ```
-agenda-checklist/
-├── index.html          # página do motorista
-├── admin.html          # painel do operador
-├── config.js           # URL e chave do Supabase
-├── css/styles.css
-├── js/
-│   ├── common.js       # cliente Supabase e funções comuns
-│   ├── agendar.js      # lógica do motorista
-│   └── admin.js        # lógica do painel
-└── supabase/
-    └── schema.sql      # tabelas, regras de segurança e funções
+index.html            # página do motorista
+admin.html            # painel do operador (agenda, check-in, horários, relatórios, QR)
+privacidade.html      # política de privacidade (LGPD)
+config.js             # chave do Supabase, nome, contatos, orientações e regras
+styles.css            # visual
+common.js             # funções comuns, rodapé, calendário
+agendar.js            # lógica do motorista
+admin.js              # lógica do painel
+manifest.webmanifest  # instalar como app no celular
+sw.js                 # suporte ao modo app
+icon*.png, icon.svg   # ícones
+schema.sql            # banco: tabelas, regras e funções (pode rodar de novo)
+2_operador.sql        # libera o primeiro operador
+3_limpeza_automatica.sql  # opcional: apaga dados com mais de 12 meses todo mês
 ```
+
 
 ## Ideias para depois
 
