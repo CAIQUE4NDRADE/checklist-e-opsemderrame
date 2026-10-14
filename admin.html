@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#6b1f66">
+  <title>Painel do Checklist</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap">
+      <div>
+        <h1>Painel do Checklist</h1>
+        <small data-nome-local></small>
+      </div>
+      <button class="btn-peq oculto" id="btn-sair">Sair</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- ========== LOGIN ========== -->
+    <form class="card wrap-estreito oculto" id="tela-login" novalidate>
+      <h2>Entrar</h2>
+      <label for="l-email">E-mail</label>
+      <input id="l-email" type="email" autocomplete="username" required>
+      <label for="l-senha">Senha</label>
+      <input id="l-senha" type="password" autocomplete="current-password" required>
+      <p class="erro" id="login-erro" role="alert"></p>
+      <button type="submit" class="btn-primario btn-bloco">Entrar</button>
+    </form>
+
+    <!-- ========== APP ========== -->
+    <div id="tela-app" class="oculto">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" aria-selected="true" data-aba="dia">Agenda do dia</button>
+        <button class="tab" role="tab" aria-selected="false" data-aba="horarios">Horários</button>
+        <button class="tab" role="tab" aria-selected="false" data-aba="qr">QR Code</button>
+      </div>
+
+      <!-- ----- Dia ----- -->
+      <section id="aba-dia">
+        <div class="card nao-imprimir">
+          <div class="barra">
+            <div>
+              <label for="d-tipo">Agenda</label>
+              <select id="d-tipo">
+                <option value="checklist">Checklist do caminhão</option>
+                <option value="curso_osd">Curso Operação Sem Derrame</option>
+              </select>
+            </div>
+            <div>
+              <label for="d-data">Data</label>
+              <input id="d-data" type="date">
+            </div>
+            <div style="flex:2 1 220px">
+              <label for="d-busca">Buscar (código, nome, CPF ou placa)</label>
+              <input id="d-busca" placeholder="Ex.: A1B2C3 ou BRQ5F15">
+            </div>
+            <div style="flex:0 0 auto;display:flex;gap:8px">
+              <button id="d-hoje">Hoje</button>
+              <button id="d-atualizar">Atualizar</button>
+              <button id="d-imprimir">Imprimir</button>
+            </div>
+          </div>
+          <label style="display:flex;gap:8px;align-items:center;font-weight:500">
+            <input type="checkbox" id="d-mostrar-cancelados" style="width:auto"> Mostrar cancelados
+          </label>
+        </div>
+
+        <h2 id="d-titulo" style="font-size:1.1rem;margin:4px 0"></h2>
+        <div class="kpis" id="d-kpis"></div>
+        <div id="d-lista"></div>
+      </section>
+
+      <!-- ----- Horários ----- -->
+      <section id="aba-horarios" class="oculto">
+        <form class="card" id="form-gerar" novalidate>
+          <h2>Gerar horários</h2>
+          <p class="muted" style="margin-top:0">Cria os horários em lote. Horários que já existem são ignorados.</p>
+          <label for="g-tipo">Tipo</label>
+          <select id="g-tipo">
+            <option value="checklist">Checklist do caminhão</option>
+            <option value="curso_osd">Curso Operação Sem Derrame (preenche: toda terça, 1 ano)</option>
+          </select>
+          <div class="grid2">
+            <div>
+              <label for="g-inicio">De</label>
+              <input id="g-inicio" type="date" required>
+            </div>
+            <div>
+              <label for="g-fim">Até</label>
+              <input id="g-fim" type="date" required>
+            </div>
+          </div>
+
+          <label for="g-horas">Horários de início (separados por vírgula)</label>
+          <input id="g-horas" value="04:00, 05:00, 08:00, 09:00, 10:00, 16:00, 17:00">
+
+          <div class="grid2">
+            <div>
+              <label for="g-duracao">Duração (min)</label>
+              <input id="g-duracao" type="number" min="5" max="240" value="10">
+            </div>
+            <div>
+              <label for="g-vagas">Vagas por horário</label>
+              <input id="g-vagas" type="number" min="1" max="50" value="1">
+            </div>
+          </div>
+
+          <label>Dias da semana</label>
+          <div class="dias-semana" id="g-dias"></div>
+
+          <p class="erro" id="gerar-erro" role="alert"></p>
+          <div class="acoes"><button type="submit" class="btn-primario">Gerar horários</button></div>
+        </form>
+
+        <div class="card">
+          <h2>Horários cadastrados</h2>
+          <div class="barra">
+            <div style="flex:0 1 260px">
+              <label for="h-tipo">Tipo</label>
+              <select id="h-tipo">
+                <option value="checklist">Checklist do caminhão</option>
+                <option value="curso_osd">Curso Operação Sem Derrame</option>
+              </select>
+            </div>
+            <div style="flex:0 1 220px">
+              <label for="h-data">Data</label>
+              <input id="h-data" type="date">
+            </div>
+          </div>
+          <div class="tabela-scroll" style="margin-top:12px">
+            <table class="lista">
+              <thead><tr><th>Horário</th><th>Vagas</th><th>Agendados</th><th>Situação</th><th></th></tr></thead>
+              <tbody id="h-lista"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ----- QR ----- -->
+      <section id="aba-qr" class="oculto">
+        <div class="card nao-imprimir">
+          <label for="qr-alvo" style="margin-top:0">Cartaz para</label>
+          <select id="qr-alvo" style="max-width:360px">
+            <option value="">Checklist e curso (o motorista escolhe)</option>
+            <option value="curso">Só o Curso Operação Sem Derrame</option>
+            <option value="checklist">Só o checklist do caminhão</option>
+          </select>
+        </div>
+        <div class="card cartaz">
+          <h2 id="qr-titulo">Agende seu checklist ou curso</h2>
+          <p style="font-size:1.1rem;margin-top:0" data-nome-local></p>
+          <div class="qr-box" id="qr-cartaz"></div>
+          <p>Aponte a câmera do celular para o QR code,<br>escolha o horário e preencha seus dados.</p>
+          <p class="url" id="qr-url"></p>
+          <div class="acoes nao-imprimir" style="justify-content:center">
+            <button class="btn-primario" onclick="window.print()">Imprimir cartaz</button>
+            <a class="btn" id="qr-abrir" target="_blank" rel="noopener">Abrir página do motorista</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

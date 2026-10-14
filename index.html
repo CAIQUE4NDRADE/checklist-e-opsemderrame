@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#6b1f66">
+  <title>Agendar Checklist</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="wrap-estreito">
+      <div>
+        <h1>Agendamento de Checklist</h1>
+        <small data-nome-local></small>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap-estreito">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-aba="agendar">Agendar</button>
+      <button class="tab" role="tab" aria-selected="false" data-aba="consultar">Meu agendamento</button>
+    </div>
+
+    <!-- ========== AGENDAR ========== -->
+    <section id="aba-agendar">
+
+      <!-- Passo 0: o que agendar -->
+      <div class="card" id="passo-tipo">
+        <h2>O que você quer agendar?</h2>
+        <div class="tipos">
+          <button type="button" class="tipo-opcao" data-tipo="checklist">
+            <b>Checklist do caminhão</b>
+            <small>Inspeção do conjunto antes de carregar. Horários de segunda a sábado.</small>
+          </button>
+          <button type="button" class="tipo-opcao" data-tipo="curso_osd">
+            <b data-nome-curso>Curso Operação Sem Derrame</b>
+            <small>Turma toda terça-feira. Não precisa informar placas.</small>
+          </button>
+        </div>
+      </div>
+
+      <!-- Passo 1: dia e horário -->
+      <div class="card oculto" id="passo-horario">
+        <div class="tipo-atual">
+          <span class="chip" id="chip-tipo"></span>
+          <button type="button" class="btn-peq" id="btn-trocar-tipo">Trocar</button>
+        </div>
+        <h2 id="titulo-dia">1. Escolha o dia</h2>
+        <div class="dias" id="lista-dias"></div>
+
+        <h3>Horários disponíveis</h3>
+        <div class="slots" id="lista-slots"></div>
+        <p class="muted" id="slots-msg"></p>
+      </div>
+
+      <!-- Passo 2: dados -->
+      <form class="card oculto" id="passo-dados" novalidate>
+        <h2>2. Seus dados</h2>
+        <div class="resumo" id="resumo-horario"></div>
+        <button type="button" class="btn-peq" id="btn-trocar-horario" style="margin-top:6px">Trocar horário</button>
+
+        <label for="f-nome">Nome completo</label>
+        <input id="f-nome" name="nome" autocomplete="name" required>
+
+        <div class="grid2">
+          <div>
+            <label for="f-cpf">CPF</label>
+            <input id="f-cpf" name="cpf" inputmode="numeric" placeholder="000.000.000-00" required>
+          </div>
+          <div>
+            <label for="f-telefone">Telefone <span class="opc">(opcional)</span></label>
+            <input id="f-telefone" name="telefone" inputmode="tel" autocomplete="tel" placeholder="(19) 99999-9999">
+          </div>
+        </div>
+
+        <label for="f-email">E-mail <span class="opc">(opcional)</span></label>
+        <input id="f-email" name="email" type="email" autocomplete="email">
+
+        <div class="grid2">
+          <div>
+            <label for="f-transportadora">Transportadora</label>
+            <input id="f-transportadora" name="transportadora" required>
+          </div>
+          <div>
+            <label for="f-companhia">Companhia</label>
+            <input id="f-companhia" name="companhia" list="lista-companhias" required>
+            <datalist id="lista-companhias"></datalist>
+          </div>
+        </div>
+
+        <div id="bloco-caminhao">
+        <h3>Placas</h3>
+        <div class="grid2">
+          <div>
+            <label for="f-placa_cavalo">Cavalo</label>
+            <input id="f-placa_cavalo" name="placa_cavalo" class="placa" autocapitalize="characters" placeholder="ABC1D23" required>
+          </div>
+          <div>
+            <label for="f-placa_reboque1">Reboque 1 <span class="opc">(opcional)</span></label>
+            <input id="f-placa_reboque1" name="placa_reboque1" class="placa" autocapitalize="characters">
+          </div>
+          <div>
+            <label for="f-placa_reboque2">Reboque 2 <span class="opc">(opcional)</span></label>
+            <input id="f-placa_reboque2" name="placa_reboque2" class="placa" autocapitalize="characters">
+          </div>
+          <div>
+            <label for="f-placa_reboque3">Reboque 3 <span class="opc">(opcional)</span></label>
+            <input id="f-placa_reboque3" name="placa_reboque3" class="placa" autocapitalize="characters">
+          </div>
+        </div>
+
+        <h3>Validade dos documentos</h3>
+        <p class="muted" style="margin-top:0">Ajuda a equipe a conferir antes de você chegar.</p>
+        <div class="grid2">
+          <div>
+            <label for="f-cnh_validade">CNH</label>
+            <input id="f-cnh_validade" name="cnh_validade" type="date">
+          </div>
+          <div>
+            <label for="f-mopp_validade">MOPP</label>
+            <input id="f-mopp_validade" name="mopp_validade" type="date">
+          </div>
+          <div>
+            <label for="f-nr20_validade">NR-20</label>
+            <input id="f-nr20_validade" name="nr20_validade" type="date">
+          </div>
+          <div>
+            <label for="f-nr35_validade">NR-35</label>
+            <input id="f-nr35_validade" name="nr35_validade" type="date">
+          </div>
+        </div>
+        </div><!-- /bloco-caminhao -->
+
+        <label style="display:flex;gap:8px;align-items:flex-start;font-weight:500;margin-top:16px">
+          <input type="checkbox" id="f-lembrar" style="width:auto;margin-top:3px" checked>
+          Lembrar meus dados neste celular para o próximo agendamento
+        </label>
+
+        <p class="erro" id="form-erro" role="alert"></p>
+        <button type="submit" class="btn-primario btn-bloco" id="btn-agendar">Confirmar agendamento</button>
+      </form>
+
+      <!-- Passo 3: confirmação -->
+      <div class="card confirmacao oculto" id="passo-ok">
+        <h2>Agendamento confirmado ✅</h2>
+        <div class="resumo" id="ok-resumo"></div>
+        <p class="muted" style="margin-bottom:0">Seu código de confirmação:</p>
+        <div class="codigo" id="ok-codigo"></div>
+        <div class="qr-box" id="ok-qr"></div>
+        <p class="muted">Tire um print desta tela e apresente na portaria.<br>
+          Para consultar ou cancelar, use a aba <b>Meu agendamento</b> com seu CPF e este código.</p>
+        <button class="btn-bloco" id="btn-novo">Fazer outro agendamento</button>
+      </div>
+    </section>
+
+    <!-- ========== CONSULTAR ========== -->
+    <section id="aba-consultar" class="oculto">
+      <form class="card" id="form-consulta" novalidate>
+        <h2>Consultar ou cancelar</h2>
+        <label for="c-cpf">CPF</label>
+        <input id="c-cpf" inputmode="numeric" placeholder="000.000.000-00">
+        <label for="c-codigo">Código de confirmação</label>
+        <input id="c-codigo" autocapitalize="characters" maxlength="6" placeholder="Ex.: A1B2C3"
+               style="font-family:ui-monospace,monospace;letter-spacing:.2em">
+        <p class="erro" id="consulta-erro" role="alert"></p>
+        <button type="submit" class="btn-primario btn-bloco">Consultar</button>
+      </form>
+
+      <div class="card oculto" id="consulta-res"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/agendar.js"></script>
+</body>
+</html>
