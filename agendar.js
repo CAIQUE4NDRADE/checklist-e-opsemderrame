@@ -34,6 +34,13 @@
       li.classList.toggle("atual", i === atual && id !== "passo-ok");
       li.toggleAttribute("aria-current", i === atual);
     });
+    // Versão compacta para celular: "Passo 2 de 4 · Data e horário"
+    const nomes = ["Serviço", "Data e horário", "Seus dados", "Confirmação"];
+    const n = Math.max(atual, 0) + 1;
+    $("etapa-num").textContent = id === "passo-ok" ? "Concluído" : `Passo ${n} de 4`;
+    $("etapa-nome").textContent = nomes[n - 1];
+    $("etapa-progresso").style.width = (id === "passo-ok" ? 100 : n * 25) + "%";
+    $("etapa-compacta").classList.toggle("completa", id === "passo-ok");
   };
 
   // ---------- Abas ----------

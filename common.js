@@ -115,6 +115,17 @@
     el.textContent = cfg.NOME_CURSO || "Curso Operação Sem Derrame";
   });
 
+  // Logo oficial (se configurado); se a imagem não carregar, volta para o ícone
+  if (cfg.LOGO_ARQUIVO) {
+    document.querySelectorAll(".marca img").forEach((img) => {
+      const original = img.getAttribute("src");
+      img.onerror = () => { img.onerror = null; img.src = original; img.classList.remove("logo-oficial"); };
+      img.src = cfg.LOGO_ARQUIVO;
+      img.alt = cfg.NOME_LOCAL || "Logo";
+      img.classList.add("logo-oficial");
+    });
+  }
+
   // Texto das orientações (troca {CHEGAR} pelos minutos configurados)
   const textoOri = (t) => String(t).replace("{CHEGAR}", cfg.CHEGAR_ANTES_MIN || 15);
 

@@ -18,14 +18,14 @@
 </head>
 <body>
   <header class="topo">
-    <div class="wrap-estreito marca">
+    <div class="wrap-estreito marca marca-topo">
       <img src="icon.svg" alt="" width="40" height="40">
       <div>
         <h1 data-nome-app>Agenda BPA</h1>
         <small>Checklist e curso · <span data-nome-local></span></small>
+        <p class="topo-desc">Agende o checklist do caminhão ou o Curso Operação Sem Derrame e apresente o código na portaria.</p>
       </div>
     </div>
-    <p class="wrap-estreito topo-desc">Agende o checklist do caminhão ou o Curso Operação Sem Derrame pelo celular e apresente o código na portaria.</p>
   </header>
 
   <main class="wrap-estreito">
@@ -43,6 +43,10 @@
         <li data-n="3">Seus dados</li>
         <li data-n="4">Confirmação</li>
       </ol>
+      <div class="etapa-compacta" id="etapa-compacta" aria-hidden="true">
+        <div class="etapa-compacta-texto"><b id="etapa-num">Passo 1 de 4</b> · <span id="etapa-nome">Serviço</span></div>
+        <div class="etapa-barra"><i id="etapa-progresso" style="width:25%"></i></div>
+      </div>
 
       <!-- Passo 0: o que agendar -->
       <div class="card" id="passo-tipo">

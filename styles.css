@@ -525,3 +525,30 @@ select.sel-status { min-height: 40px; }
 .codigo { display: table; margin: 8px auto 4px; }
 .qr-box { display: table; margin: 8px auto; }
 #ok-orientacao:empty { display: none; }
+
+/* ajustes v6: cabeçalho e etapas no celular */
+.marca-topo { align-items: flex-start; }
+.marca-topo img { margin-top: 2px; }
+.topo-desc { margin: 8px 0 0; font-size: .92rem; opacity: .92; max-width: 46ch; line-height: 1.4; }
+
+.etapa-compacta { display: none; margin: 0 0 14px; }
+.etapa-compacta-texto { font-size: .95rem; color: var(--muted); margin-bottom: 8px; }
+.etapa-compacta-texto b { color: var(--primary); font-family: var(--font-titulo); font-size: 1.05rem; }
+.etapa-barra { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.etapa-barra i { display: block; height: 100%; border-radius: inherit; background: var(--primary); transition: width .25s; }
+.etapa-compacta.completa .etapa-barra i { background: var(--accent); }
+.etapa-compacta.completa b { color: var(--accent-text); }
+
+@media (max-width: 560px) {
+  .etapas { display: none; }
+  .etapa-compacta { display: block; }
+  .topo-desc { display: none; }          /* no celular, os cartões já explicam cada serviço */
+  header.topo { padding: 14px 16px 16px; }
+}
+
+/* Logo oficial: fundo branco para qualquer cor de logo */
+.marca img.logo-oficial {
+  width: auto; height: 48px; max-width: 150px; object-fit: contain;
+  background: #fff; padding: 6px 10px; border-radius: 10px; box-shadow: none;
+}
+@media (max-width: 560px) { .marca img.logo-oficial { height: 40px; max-width: 110px; } }

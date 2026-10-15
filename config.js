@@ -11,6 +11,11 @@ window.APP_CONFIG = {
   NOME_APP: "Agenda Operacional BPA",
   NOME_LOCAL: "Terminal Paulínia",
 
+  // Logo oficial no topo esquerdo. Suba a imagem (PNG ou SVG) no GitHub, junto dos
+  // outros arquivos, e escreva o nome dela aqui, ex.: "logo.png".
+  // Deixe "" para usar o ícone do app.
+  LOGO_ARQUIVO: "",
+
   // ---------- Contato e endereço (aparecem no rodapé e na confirmação) ----------
   // Deixe "" para esconder um item.
   TELEFONE_PORTARIA: "",            // ex.: "(19) 3333-0000"
