@@ -576,7 +576,7 @@
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     const W = 297, H = 210;
-    const roxo = [107, 31, 102], ouro = [214, 154, 40];
+    const roxo = [77, 109, 93], ouro = [96, 144, 62];   // verde institucional + verde destaque
     const curso = cfg.NOME_CURSO || "Curso Operação Sem Derrame";
 
     lista.forEach((a, i) => {

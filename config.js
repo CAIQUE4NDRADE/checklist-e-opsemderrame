@@ -8,7 +8,7 @@ window.APP_CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_b7QKEbMmXBoqBqvBGWRNvw_PJIcqLyV",
 
   // ---------- Identidade ----------
-  NOME_APP: "Agenda BPA",
+  NOME_APP: "Agenda Operacional BPA",
   NOME_LOCAL: "Terminal Paulínia",
 
   // ---------- Contato e endereço (aparecem no rodapé e na confirmação) ----------

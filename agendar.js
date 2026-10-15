@@ -25,8 +25,16 @@
   preencherLista("ori-checklist", cfg.ORIENTACOES_CHECKLIST);
   preencherLista("ori-curso", cfg.ORIENTACOES_CURSO);
 
-  const mostrarPasso = (id) =>
-    ["passo-tipo", "passo-horario", "passo-dados", "passo-ok"].forEach((p) => $(p).classList.toggle("oculto", p !== id));
+  const PASSOS = ["passo-tipo", "passo-horario", "passo-dados", "passo-ok"];
+  const mostrarPasso = (id) => {
+    PASSOS.forEach((p) => $(p).classList.toggle("oculto", p !== id));
+    const atual = PASSOS.indexOf(id);
+    document.querySelectorAll("#etapas li").forEach((li, i) => {
+      li.classList.toggle("feita", i < atual || id === "passo-ok");
+      li.classList.toggle("atual", i === atual && id !== "passo-ok");
+      li.toggleAttribute("aria-current", i === atual);
+    });
+  };
 
   // ---------- Abas ----------
   document.querySelectorAll(".tab").forEach((t) =>
@@ -46,7 +54,7 @@
     const curso = t === "curso_osd";
     $("chip-tipo").textContent = NOME_TIPO[t];
     $("chip-tipo").className = "chip" + (curso ? " curso" : "");
-    $("titulo-dia").textContent = curso ? "1. Escolha a turma (terça-feira)" : "1. Escolha o dia";
+    $("titulo-dia").textContent = curso ? "Escolha a turma (terça-feira)" : "Escolha o dia";
     document.querySelectorAll("[data-so]").forEach((el) => el.classList.toggle("oculto", el.dataset.so !== t));
     diaSel = hojeSP();
     mostrarPasso("passo-horario");

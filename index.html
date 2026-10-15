@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#6b1f66">
+  <meta name="theme-color" content="#4d6d5d">
   <meta name="description" content="Agende o checklist do caminhão ou o Curso Operação Sem Derrame pelo celular.">
   <title>Agenda BPA</title>
   <link rel="manifest" href="manifest.webmanifest">
@@ -25,6 +25,7 @@
         <small>Checklist e curso · <span data-nome-local></span></small>
       </div>
     </div>
+    <p class="wrap-estreito topo-desc">Agende o checklist do caminhão ou o Curso Operação Sem Derrame pelo celular e apresente o código na portaria.</p>
   </header>
 
   <main class="wrap-estreito">
@@ -36,10 +37,16 @@
 
     <!-- ========== AGENDAR ========== -->
     <section id="aba-agendar">
+      <ol class="etapas" id="etapas" aria-label="Etapas do agendamento">
+        <li data-n="1" class="atual">Serviço</li>
+        <li data-n="2">Data e horário</li>
+        <li data-n="3">Seus dados</li>
+        <li data-n="4">Confirmação</li>
+      </ol>
 
       <!-- Passo 0: o que agendar -->
       <div class="card" id="passo-tipo">
-        <h2>O que você quer agendar?</h2>
+        <h2>Qual serviço você precisa?</h2>
         <div class="tipos">
           <button type="button" class="tipo-opcao" data-tipo="checklist">
             <b>Checklist do caminhão</b>
@@ -64,11 +71,12 @@
         <h3>Horários disponíveis</h3>
         <div class="slots" id="lista-slots"></div>
         <p class="muted" id="slots-msg"></p>
+        <p class="legenda"><span><i class="livre"></i>Disponível</span><span><i class="lotado"></i>Lotado</span></p>
       </div>
 
       <!-- Passo 2: dados -->
       <form class="card oculto" id="passo-dados" novalidate>
-        <h2>2. Seus dados</h2>
+        <h2>Seus dados</h2>
         <div class="resumo" id="resumo-horario"></div>
         <button type="button" class="btn-peq" id="btn-trocar-horario" style="margin-top:6px">Trocar horário</button>
 
@@ -109,7 +117,7 @@
 
       <!-- Passo 3: confirmação -->
       <div class="card confirmacao oculto" id="passo-ok">
-        <h2>Agendamento confirmado ✅</h2>
+        <h2>Agendamento confirmado</h2>
         <div class="resumo" id="ok-resumo"></div>
         <p class="muted" style="margin-bottom:0">Seu código de confirmação:</p>
         <div class="codigo" id="ok-codigo"></div>

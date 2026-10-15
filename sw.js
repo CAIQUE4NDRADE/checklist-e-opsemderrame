@@ -1,6 +1,6 @@
 // Service worker simples: permite instalar como app.
 // Sempre busca da rede primeiro (dados atualizados); usa cache só se estiver sem internet.
-const CACHE = "agenda-bpa-v3";
+const CACHE = "agenda-bpa-v5";
 const ARQUIVOS = ["./", "index.html", "styles.css", "config.js", "common.js", "agendar.js",
                   "privacidade.html", "icon.svg", "icon-192.png"];
 
