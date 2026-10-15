@@ -138,7 +138,7 @@
       `<b>${esc(cfg.NOME_APP || "Agenda BPA")}</b> · ${esc(cfg.NOME_LOCAL || "")}`,
       cfg.ENDERECO ? `${esc(cfg.ENDERECO)}${cfg.MAPS_URL ? ` · <a href="${esc(cfg.MAPS_URL)}" target="_blank" rel="noopener">ver no mapa</a>` : ""}` : "",
       cfg.TELEFONE_PORTARIA ? `Portaria: ${tel(cfg.TELEFONE_PORTARIA)}` : "",
-      cfg.WHATSAPP_PORTARIA ? `WhatsApp: ${zap(cfg.WHATSAPP_PORTARIA)}` : "",
+      cfg.WHATSAPP_PORTARIA ? `Gate da portaria (WhatsApp): ${zap(cfg.WHATSAPP_PORTARIA)}` : "",
       cfg.HORARIO_ATENDIMENTO ? `Atendimento: ${esc(cfg.HORARIO_ATENDIMENTO)}` : "",
       `<a href="privacidade.html">Política de privacidade</a>`,
     ].filter(Boolean);

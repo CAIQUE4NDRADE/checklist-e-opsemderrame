@@ -19,7 +19,7 @@ window.APP_CONFIG = {
   // ---------- Contato e endereço (aparecem no rodapé e na confirmação) ----------
   // Deixe "" para esconder um item.
   TELEFONE_PORTARIA: "",            // ex.: "(19) 3333-0000"
-  WHATSAPP_PORTARIA: "",            // ex.: "(19) 99999-0000"
+  WHATSAPP_PORTARIA: "(19) 97163-7863",  // gate da portaria: é deste número que a equipe chama o motorista
   HORARIO_ATENDIMENTO: "Segunda a sábado",
   ENDERECO: "Av. Sidney Cardon de Oliveira, 2365 — Paulínia/SP",
   MAPS_URL: "https://www.google.com/maps/search/?api=1&query=Av.+Sidney+Cardon+de+Oliveira+2365+Paulinia+SP",

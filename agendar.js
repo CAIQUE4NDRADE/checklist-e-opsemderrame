@@ -368,6 +368,7 @@
     $("eok-resumo").textContent = `Checklist · ${fmtDataLonga(pedido.data)} · ${PERIODOS[pedido.periodo]}`;
     $("eok-codigo").textContent = codigo;
     $("eok-telefone").textContent = mascaraTelefone(pedido.telefone);
+    $("eok-gate").textContent = cfg.WHATSAPP_PORTARIA || cfg.TELEFONE_PORTARIA || "";
     mostrarPasso("passo-encaixe-ok");
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
