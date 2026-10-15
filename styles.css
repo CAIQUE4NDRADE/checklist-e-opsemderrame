@@ -613,3 +613,102 @@ select.sel-status { min-height: 40px; }
 .slot:disabled b { color: var(--danger); text-decoration-color: var(--danger); }
 .slot:disabled small { color: var(--danger); font-weight: 700; }
 .legenda .lotado { background: var(--danger-soft); border: 1.5px dashed var(--danger); }
+
+
+/* Refinamento visual v7 — layout mais leve e hierarquia operacional */
+:root {
+  --radius: 18px;
+  --shadow: 0 8px 26px rgba(31, 42, 36, .075);
+}
+body {
+  background:
+    radial-gradient(ellipse at 50% 0, rgba(96, 144, 62, .09), transparent 36rem),
+    var(--bg);
+}
+header.topo {
+  background: linear-gradient(120deg, #3d594b 0%, var(--primary) 72%, #5c806d 100%);
+  border-bottom: 4px solid var(--accent);
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+.marca-topo { gap: 15px; }
+.marca-topo img {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .14);
+}
+header.topo h1 { font-size: clamp(1.45rem, 3vw, 1.8rem); letter-spacing: .015em; }
+header.topo small { font-size: .88rem; margin-top: 3px; }
+.topo-desc { max-width: 58ch; font-size: .96rem; }
+.wrap-estreito { max-width: 700px; }
+main.wrap-estreito { padding-top: 22px; }
+.tabs {
+  gap: 8px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--card) 82%, var(--bg));
+  box-shadow: 0 3px 10px rgba(31, 42, 36, .035);
+}
+.tab {
+  flex: 1 1 0;
+  white-space: nowrap;
+  border-color: transparent;
+  border-radius: 11px;
+  padding: 11px 12px;
+  transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+.tab[aria-selected="true"] {
+  background: var(--primary);
+  box-shadow: 0 3px 8px rgba(31, 42, 36, .12);
+}
+.card {
+  border-radius: 18px;
+  padding: clamp(18px, 3vw, 24px);
+  margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+.card h2 { font-size: 1.22rem; margin-bottom: 16px; }
+.card h3 { font-size: 1.02rem; margin-top: 20px; }
+#passo-tipo > h2 { font-size: 1.3rem; }
+.tipos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.tipo-opcao {
+  min-height: 180px;
+  padding: 20px 18px;
+  border-radius: 16px;
+  background: linear-gradient(155deg, var(--card), color-mix(in srgb, var(--primary-soft) 36%, var(--card)));
+  box-shadow: 0 3px 12px rgba(31, 42, 36, .035);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.tipo-opcao b { font-size: 1.13rem; line-height: 1.25; margin-bottom: 9px; }
+.tipo-opcao small { font-size: .94rem; line-height: 1.45; }
+.tipo-opcao:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(31, 42, 36, .09);
+}
+.tipo-opcao[data-tipo="checklist"] { border-left-width: 5px; }
+.tipo-opcao[data-tipo="curso_osd"] { border-left-width: 5px; }
+.etapas { margin-bottom: 20px; }
+.etapas li { padding: 10px 8px; border-radius: 10px; }
+.etapas li.atual { box-shadow: inset 0 -3px 0 var(--primary); }
+.dia, .slot { transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.dia:hover:not([aria-pressed="true"]), .slot:hover:not(:disabled) { transform: translateY(-1px); }
+.btn-primario { box-shadow: 0 4px 12px rgba(61, 89, 75, .18); }
+button:focus-visible, a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+.rodape { border-top: 1px solid var(--border); }
+@media (max-width: 620px) {
+  .wrap-estreito { max-width: 560px; }
+  main.wrap-estreito { padding-top: 14px; }
+  .tipos { grid-template-columns: 1fr; }
+  .tipo-opcao { min-height: 0; padding: 17px; }
+  .tabs { gap: 4px; padding: 4px; }
+  .tab { padding: 10px 9px; font-size: .9rem; }
+  .card { border-radius: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tab, .tipo-opcao, .dia, .slot { transition: none !important; }
+}
