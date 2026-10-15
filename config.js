@@ -38,14 +38,15 @@ window.APP_CONFIG = {
   // ---------- Orientações (página "Antes de vir") ----------
   ORIENTACOES_CHECKLIST: [
     "Chegue com {CHEGAR} minutos de antecedência e apresente o código de confirmação na portaria.",
-    "Use EPI completo: botina, calça e camisa de manga longa, capacete e óculos.",
+    "Use EPI completo: botina, calça, capacete e óculos.",
     "Transferência Raízen: traga o checklist da garagem assinado pelo técnico de segurança da transportadora. Sem esse documento, não será possível realizar o checklist.",
     "Se não puder vir, cancele pelo site para liberar a vaga para outro motorista.",
   ],
   ORIENTACOES_CURSO: [
     "O curso acontece às terças-feiras. Chegue com {CHEGAR} minutos de antecedência.",
     "Traga documento com foto (RG ou CNH).",
-    "Traga EPI completo: botina, calça e camisa de manga longa, capacete e óculos.",
+    "Traga EPI completo: botina, calça, capacete e óculos.",
+    "A prova é feita pelo celular do motorista. Venha com o celular carregado e com internet.",
     "Quem concluir o curso teórico recebe o certificado por e-mail.",
     "Se não puder vir, cancele pelo site para liberar a vaga.",
   ],
