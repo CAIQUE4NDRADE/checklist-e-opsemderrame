@@ -607,3 +607,9 @@ select.sel-status { min-height: 40px; }
 .btn-perigo.confirmar { background: var(--danger); color: #fff; }
 .btn-zap { background: #1f8f4e; border-color: #1f8f4e; color: #fff; }
 .btn-zap:hover { background: #18773f; }
+
+/* Horário lotado em vermelho */
+.slot:disabled { background: var(--danger-soft); border: 1.5px dashed var(--danger); color: var(--danger); }
+.slot:disabled b { color: var(--danger); text-decoration-color: var(--danger); }
+.slot:disabled small { color: var(--danger); font-weight: 700; }
+.legenda .lotado { background: var(--danger-soft); border: 1.5px dashed var(--danger); }
