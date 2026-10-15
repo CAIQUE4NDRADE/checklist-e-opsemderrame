@@ -574,3 +574,36 @@ select.sel-status { min-height: 40px; }
 .btn-lixo:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-soft); }
 .btn-lixo.confirmar { color: #fff; background: var(--danger); border-color: var(--danger); }
 .btn-lixo.confirmar span { display: inline; }
+
+/* Encaixe */
+.encaixe-cta {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  margin-top: 16px; padding: 14px; border-radius: 12px;
+  border: 1.5px dashed var(--border-forte); background: var(--bg);
+}
+.encaixe-cta > div { flex: 1 1 200px; min-width: 0; }
+.encaixe-cta b { display: block; font-family: var(--font-titulo); font-size: 1.1rem; }
+.encaixe-cta span { font-size: .9rem; color: var(--muted); }
+.encaixe-cta button { flex: 0 0 auto; }
+.encaixe-cta:not(.destaque) button { background: var(--card); color: var(--primary); border-color: var(--primary); }
+.encaixe-cta.destaque { border: 1.5px solid var(--warn); background: var(--warn-soft); }
+.encaixe-cta.destaque b { color: var(--warn); }
+.chip-encaixe { background: var(--warn-soft); color: var(--warn); }
+.confirmacao-encaixe::before { content: "⏳"; background: var(--warn-soft); color: var(--warn); box-shadow: 0 0 0 8px var(--bg); font-size: 1.7rem; }
+.confirmacao-encaixe h2 { color: var(--warn); }
+@media (max-width: 420px) { .encaixe-cta button { width: 100%; } }
+
+/* Encaixes no painel */
+.badge { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; margin-left: 4px;
+  border-radius: 999px; background: var(--danger); color: #fff; font-size: .78rem; font-weight: 700; line-height: 1; }
+.encaixe { border-left: 5px solid var(--warn); }
+.encaixe-quando { font-family: var(--font-titulo); font-weight: 700; font-size: 1.05rem; color: var(--text); }
+.encaixe-motivo { margin-top: 8px; padding: 8px 10px; background: var(--gray-soft); border-radius: 8px; font-size: .92rem; }
+.encaixe-acoes { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: end; margin-top: 12px;
+  padding-top: 12px; border-top: 1px dashed var(--border-forte); }
+.encaixe-acoes > div { flex: 1 1 120px; }
+.encaixe-acoes label { margin-top: 0; }
+.encaixe-botoes { display: flex; gap: 8px; flex: 0 0 auto !important; }
+.btn-perigo.confirmar { background: var(--danger); color: #fff; }
+.btn-zap { background: #1f8f4e; border-color: #1f8f4e; color: #fff; }
+.btn-zap:hover { background: #18773f; }

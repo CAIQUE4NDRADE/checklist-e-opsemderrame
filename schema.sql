@@ -328,3 +328,139 @@ grant execute on function public.agendar(jsonb)                     to anon, aut
 grant execute on function public.consultar_agendamento(text, text)  to anon, authenticated;
 grant execute on function public.cancelar_agendamento(text, text)   to anon, authenticated;
 grant execute on function public.eh_operador()                      to authenticated;
+
+-- =====================================================================
+--  v6: Solicitação de encaixe de checklist (quando não há vaga)
+-- =====================================================================
+
+create table if not exists public.encaixes (
+  id              bigint generated always as identity primary key,
+  codigo          text   not null,
+  data            date   not null,
+  periodo         text   not null default 'qualquer' check (periodo in ('manha','tarde','qualquer')),
+  nome            text   not null,
+  placa           text   not null,
+  transportadora  text   not null,
+  telefone        text   not null,
+  motivo          text,
+  status          text   not null default 'pendente' check (status in ('pendente','aprovado','recusado')),
+  resposta        text,
+  agendamento_id  bigint references public.agendamentos(id) on delete set null,
+  consentimento_em timestamptz,
+  created_at      timestamptz not null default now(),
+  respondido_em   timestamptz
+);
+create index if not exists encaixes_data_idx  on public.encaixes(data);
+create index if not exists encaixes_placa_idx on public.encaixes(placa);
+
+alter table public.encaixes enable row level security;
+drop policy if exists "operador gerencia encaixes" on public.encaixes;
+create policy "operador gerencia encaixes" on public.encaixes
+  for all to authenticated using (public.eh_operador()) with check (public.eh_operador());
+
+-- Motorista pede encaixe
+create or replace function public.solicitar_encaixe(p jsonb)
+returns text language plpgsql security definer set search_path = public as $$
+declare
+  v_data   date := nullif(p->>'data', '')::date;
+  v_nome   text := upper(trim(coalesce(p->>'nome', '')));
+  v_transp text := upper(trim(coalesce(p->>'transportadora', '')));
+  v_tel    text := nullif(regexp_replace(coalesce(p->>'telefone', ''), '\D', '', 'g'), '');
+  v_placa  text := public.norm_placa(p->>'placa');
+  v_per    text := coalesce(nullif(p->>'periodo', ''), 'qualquer');
+  v_codigo text;
+begin
+  if coalesce((p->>'consentimento')::boolean, false) is not true then
+    raise exception 'Para enviar, aceite o uso dos seus dados (LGPD).';
+  end if;
+  if v_data is null or v_data < public.agora_sp()::date then
+    raise exception 'Escolha uma data de hoje em diante.';
+  end if;
+  if v_data > public.agora_sp()::date + 30 then
+    raise exception 'Só é possível pedir encaixe para os próximos 30 dias.';
+  end if;
+  if v_nome = '' or v_transp = '' then raise exception 'Preencha nome e transportadora.'; end if;
+  if v_placa is null or v_placa !~ '^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$' then
+    raise exception 'Placa inválida. Use o formato ABC1234 ou ABC1D23.';
+  end if;
+  if v_tel is null or length(v_tel) not between 10 and 11 then
+    raise exception 'Telefone inválido. Informe com DDD.';
+  end if;
+  if v_per not in ('manha','tarde','qualquer') then v_per := 'qualquer'; end if;
+
+  if exists (select 1 from public.encaixes
+              where placa = v_placa and data = v_data and status = 'pendente') then
+    raise exception 'Já existe um pedido de encaixe pendente para essa placa nesse dia.';
+  end if;
+  if exists (select 1 from public.agendamentos a join public.horarios h on h.id = a.horario_id
+              where a.placa_cavalo = v_placa and h.tipo = 'checklist' and h.data = v_data
+                and a.status <> 'cancelado') then
+    raise exception 'Essa placa já tem checklist agendado nesse dia.';
+  end if;
+
+  v_codigo := upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
+  insert into public.encaixes (codigo, data, periodo, nome, placa, transportadora, telefone, motivo, consentimento_em)
+  values (v_codigo, v_data, v_per, v_nome, v_placa, v_transp, v_tel,
+          nullif(left(trim(coalesce(p->>'motivo', '')), 300), ''), now());
+  return v_codigo;
+end $$;
+
+-- Motorista acompanha o pedido (placa + código)
+create or replace function public.consultar_encaixe(p_placa text, p_codigo text)
+returns table (data date, periodo text, nome text, placa text, status text, resposta text,
+               hora_inicio time, hora_fim time)
+language sql stable security definer set search_path = public as $$
+  select e.data, e.periodo, e.nome, e.placa, e.status, e.resposta, h.hora_inicio, h.hora_fim
+    from public.encaixes e
+    left join public.agendamentos a on a.id = e.agendamento_id
+    left join public.horarios h on h.id = a.horario_id
+   where e.codigo = upper(trim(coalesce(p_codigo, '')))
+     and e.placa  = public.norm_placa(p_placa)
+   order by e.created_at desc
+   limit 1;
+$$;
+
+-- Operador aprova: cria (ou amplia) o horário e já gera o agendamento com o mesmo código
+create or replace function public.aprovar_encaixe(p_id bigint, p_hora time, p_resposta text default null)
+returns bigint language plpgsql security invoker set search_path = public as $$
+declare
+  e public.encaixes%rowtype;
+  v_h public.horarios%rowtype;
+  v_ocup int;
+  v_ag bigint;
+begin
+  if not public.eh_operador() then raise exception 'Acesso negado.'; end if;
+  select * into e from public.encaixes where id = p_id for update;
+  if not found then raise exception 'Pedido não encontrado.'; end if;
+  if e.status <> 'pendente' then raise exception 'Esse pedido já foi respondido.'; end if;
+
+  select * into v_h from public.horarios
+   where tipo = 'checklist' and data = e.data and hora_inicio = p_hora for update;
+  if not found then
+    insert into public.horarios (tipo, data, hora_inicio, hora_fim, vagas)
+    values ('checklist', e.data, p_hora, p_hora + interval '10 minutes', 1)
+    returning * into v_h;
+  else
+    select count(*) into v_ocup from public.agendamentos
+     where horario_id = v_h.id and status <> 'cancelado';
+    if v_ocup >= v_h.vagas then
+      update public.horarios set vagas = v_ocup + 1, ativo = true where id = v_h.id;
+    end if;
+  end if;
+
+  insert into public.agendamentos (horario_id, codigo, nome, telefone, transportadora, placa_cavalo, obs, consentimento_em)
+  values (v_h.id, e.codigo, e.nome, e.telefone, e.transportadora, e.placa,
+          'Encaixe' || coalesce(': ' || nullif(e.motivo, ''), ''), e.consentimento_em)
+  returning id into v_ag;
+
+  update public.encaixes
+     set status = 'aprovado', agendamento_id = v_ag, respondido_em = now(),
+         resposta = nullif(trim(coalesce(p_resposta, '')), '')
+   where id = p_id;
+  return v_ag;
+end $$;
+
+revoke execute on function public.aprovar_encaixe(bigint, time, text) from public, anon;
+grant  execute on function public.aprovar_encaixe(bigint, time, text) to authenticated;
+grant  execute on function public.solicitar_encaixe(jsonb)            to anon, authenticated;
+grant  execute on function public.consultar_encaixe(text, text)       to anon, authenticated;

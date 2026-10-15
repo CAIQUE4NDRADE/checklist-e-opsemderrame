@@ -25,22 +25,25 @@
   preencherLista("ori-checklist", cfg.ORIENTACOES_CHECKLIST);
   preencherLista("ori-curso", cfg.ORIENTACOES_CURSO);
 
-  const PASSOS = ["passo-tipo", "passo-horario", "passo-dados", "passo-ok"];
+  const PASSOS = ["passo-tipo", "passo-horario", "passo-dados", "passo-ok", "passo-encaixe", "passo-encaixe-ok"];
+  const ETAPA_DO_PASSO = { "passo-tipo": 0, "passo-horario": 1, "passo-dados": 2, "passo-encaixe": 2, "passo-ok": 3, "passo-encaixe-ok": 3 };
   const mostrarPasso = (id) => {
     PASSOS.forEach((p) => $(p).classList.toggle("oculto", p !== id));
-    const atual = PASSOS.indexOf(id);
+    const atual = ETAPA_DO_PASSO[id] ?? 0;
+    const fim = id === "passo-ok" || id === "passo-encaixe-ok";
     document.querySelectorAll("#etapas li").forEach((li, i) => {
-      li.classList.toggle("feita", i < atual || id === "passo-ok");
-      li.classList.toggle("atual", i === atual && id !== "passo-ok");
+      li.classList.toggle("feita", i < atual || fim);
+      li.classList.toggle("atual", i === atual && !fim);
       li.toggleAttribute("aria-current", i === atual);
     });
     // Versão compacta para celular: "Passo 2 de 4 · Data e horário"
-    const nomes = ["Serviço", "Data e horário", "Seus dados", "Confirmação"];
-    const n = Math.max(atual, 0) + 1;
-    $("etapa-num").textContent = id === "passo-ok" ? "Concluído" : `Passo ${n} de 4`;
+    const nomes = ["Serviço", "Data e horário", id === "passo-encaixe" ? "Pedido de encaixe" : "Seus dados",
+                   id === "passo-encaixe-ok" ? "Pedido enviado" : "Confirmação"];
+    const n = atual + 1;
+    $("etapa-num").textContent = fim ? "Concluído" : `Passo ${n} de 4`;
     $("etapa-nome").textContent = nomes[n - 1];
-    $("etapa-progresso").style.width = (id === "passo-ok" ? 100 : n * 25) + "%";
-    $("etapa-compacta").classList.toggle("completa", id === "passo-ok");
+    $("etapa-progresso").style.width = (fim ? 100 : n * 25) + "%";
+    $("etapa-compacta").classList.toggle("completa", fim);
   };
 
   // ---------- Abas ----------
@@ -136,10 +139,13 @@
     }
     if (!data.length) {
       msg.textContent = tipo === "curso_osd" ? "Sem turma neste dia." : "Nenhum horário disponível neste dia.";
+      destacarEncaixe(true);
       return;
     }
     msg.textContent = "";
 
+    const temVaga = data.some((h) => h.vagas - h.ocupadas > 0);
+    destacarEncaixe(!temVaga);
     data.forEach((h) => {
       const livres = h.vagas - h.ocupadas;
       const b = document.createElement("button");
@@ -299,6 +305,75 @@
     mostrarPasso("passo-tipo");
   });
 
+  // ---------- Encaixe ----------
+  function destacarEncaixe(semVaga) {
+    $("encaixe-cta").classList.toggle("destaque", !!semVaga);
+    $("encaixe-cta-titulo").textContent = semVaga ? "Sem vaga neste dia?" : "Não encontrou horário?";
+  }
+
+  const PERIODOS = { qualquer: "qualquer horário", manha: "manhã", tarde: "tarde" };
+
+  $("btn-encaixe").addEventListener("click", () => {
+    const hoje = hojeSP();
+    const campoData = $("e-data");
+    campoData.min = hoje;
+    campoData.max = somarDias(hoje, 30);
+    campoData.value = diaSel >= hoje ? diaSel : hoje;
+    // reaproveita o que o motorista já digitou ou salvou
+    [["e-nome", "f-nome"], ["e-placa", "f-placa_cavalo"], ["e-transportadora", "f-transportadora"], ["e-telefone", "f-telefone"]]
+      .forEach(([de, para]) => { if (!$(de).value) $(de).value = $(para).value; });
+    $("encaixe-erro").textContent = "";
+    mostrarPasso("passo-encaixe");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  $("btn-voltar-encaixe").addEventListener("click", () => { mostrarPasso("passo-horario"); carregarSlots(); });
+  $("e-placa").addEventListener("input", (e) => (e.target.value = normPlaca(e.target.value)));
+  $("e-telefone").addEventListener("input", (e) => (e.target.value = mascaraTelefone(e.target.value)));
+
+  $("passo-encaixe").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const erro = $("encaixe-erro");
+    erro.textContent = "";
+    document.querySelectorAll("#passo-encaixe .invalido").forEach((el) => el.classList.remove("invalido"));
+    const v = (id) => $(id).value.trim();
+    const problemas = [];
+    const marcar = (id, txt) => { $(id).classList.add("invalido"); problemas.push(txt); };
+    if (!v("e-data")) marcar("e-data", "dia");
+    if (!v("e-nome")) marcar("e-nome", "nome");
+    if (!placaValida(v("e-placa"))) marcar("e-placa", "placa (ex.: ABC1D23)");
+    if (!v("e-transportadora")) marcar("e-transportadora", "transportadora");
+    if (![10, 11].includes(soDigitos(v("e-telefone")).length)) marcar("e-telefone", "telefone com DDD");
+    if (problemas.length) {
+      erro.textContent = "Confira: " + problemas.join(", ") + ".";
+      document.querySelector("#passo-encaixe .invalido")?.focus();
+      return;
+    }
+    if (!$("e-consentimento").checked) {
+      erro.textContent = "Para enviar, marque a autorização de uso dos dados.";
+      $("e-consentimento").focus();
+      return;
+    }
+    const btn = $("btn-enviar-encaixe");
+    btn.disabled = true; btn.textContent = "Enviando...";
+    const pedido = {
+      data: v("e-data"), periodo: $("e-periodo").value, nome: v("e-nome"), placa: v("e-placa"),
+      transportadora: v("e-transportadora"), telefone: soDigitos(v("e-telefone")), motivo: v("e-motivo"),
+      consentimento: true,
+    };
+    const { data: codigo, error } = await sb.rpc("solicitar_encaixe", { p: pedido });
+    btn.disabled = false; btn.textContent = "Enviar pedido de encaixe";
+    if (error) { erro.textContent = msgErro(error); return; }
+
+    $("eok-resumo").textContent = `Checklist · ${fmtDataLonga(pedido.data)} · ${PERIODOS[pedido.periodo]}`;
+    $("eok-codigo").textContent = codigo;
+    $("eok-telefone").textContent = mascaraTelefone(pedido.telefone);
+    mostrarPasso("passo-encaixe-ok");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  $("btn-encaixe-novo").addEventListener("click", () => { $("passo-encaixe").reset(); mostrarPasso("passo-tipo"); });
+
   // ---------- Consultar / cancelar ----------
   let ultimaConsulta = null;
 
@@ -319,7 +394,14 @@
 
     const { data, error } = await sb.rpc("consultar_agendamento", { p_cpf: cpf, p_codigo: codigo });
     if (error) { erro.textContent = msgErro(error); return; }
-    if (!data || !data.length) { erro.textContent = "Agendamento não encontrado."; return; }
+    if (!data || !data.length) {
+      if (placaValida(cpf)) {
+        const { data: enc } = await sb.rpc("consultar_encaixe", { p_placa: cpf, p_codigo: codigo });
+        if (enc && enc.length) { mostrarEncaixe(enc[0]); return; }
+      }
+      erro.textContent = "Agendamento não encontrado. Confira a placa (ou CPF) e o código.";
+      return;
+    }
 
     ultimaConsulta = { cpf, codigo };
     const a = data[0];
@@ -350,6 +432,20 @@
       $("form-consulta").requestSubmit();
     });
   });
+
+  function mostrarEncaixe(e) {
+    const res = $("consulta-res");
+    const rot = { pendente: ["st-fila", "Aguardando análise"], aprovado: ["st-concluido", "Aprovado"], recusado: ["st-pendencia", "Não foi possível encaixar"] }[e.status];
+    res.innerHTML = `
+      <span class="chip chip-encaixe">Pedido de encaixe · Checklist</span>
+      <h2 style="margin-top:10px">${esc(e.nome)}</h2>
+      <p><b>${esc(fmtDataLonga(e.data))}</b> · ${esc(PERIODOS[e.periodo] || "")} · placa <b>${esc(e.placa)}</b></p>
+      <p>Situação: <span class="status ${rot[0]}">${rot[1]}</span></p>
+      ${e.status === "aprovado" && e.hora_inicio ? `<p class="aviso" style="background:var(--ok-soft)"><b>Horário confirmado:</b> ${fmtHora(e.hora_inicio)} às ${fmtHora(e.hora_fim)}.</p>` : ""}
+      ${e.status === "pendente" ? `<p class="muted">Não venha antes da confirmação. A equipe vai entrar em contato pelo telefone.</p>` : ""}
+      ${e.resposta ? `<p class="aviso"><b>Mensagem da equipe:</b> ${esc(e.resposta)}</p>` : ""}`;
+    res.classList.remove("oculto");
+  }
 
   // ---------- Início ----------
   carregarLembrados();

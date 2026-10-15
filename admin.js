@@ -48,11 +48,14 @@
     $("tela-app").classList.remove("oculto");
     $("btn-sair").classList.remove("oculto");
     carregarDia();
-    // Atualiza sozinho a cada 30 s (novos agendamentos aparecem)
+    contarEncaixes();
+    // Atualiza sozinho a cada 30 s (novos agendamentos e pedidos de encaixe aparecem)
     clearInterval(timerAuto);
     timerAuto = setInterval(() => {
-      if (!$("aba-dia").classList.contains("oculto") && !document.activeElement?.matches("textarea, input, select"))
-        carregarDia(true);
+      contarEncaixes();
+      if (document.activeElement?.matches("textarea, input, select")) return;
+      if (!$("aba-dia").classList.contains("oculto")) carregarDia(true);
+      if (!$("aba-encaixes").classList.contains("oculto")) carregarEncaixes(true);
     }, 30000);
   }
 
@@ -76,11 +79,12 @@
   document.querySelectorAll(".tab").forEach((t) =>
     t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
-      ["dia", "checkin", "horarios", "relatorios", "qr"].forEach((a) =>
+      ["dia", "encaixes", "checkin", "horarios", "relatorios", "qr"].forEach((a) =>
         $("aba-" + a).classList.toggle("oculto", t.dataset.aba !== a));
       if (t.dataset.aba !== "checkin") pararCamera();
       if (t.dataset.aba === "checkin") setTimeout(() => $("ci-codigo").focus(), 50);
       if (t.dataset.aba === "horarios") carregarHorarios();
+      if (t.dataset.aba === "encaixes") carregarEncaixes();
       if (t.dataset.aba === "qr") montarQR();
       if (t.dataset.aba === "dia") carregarDia();
     })
@@ -422,6 +426,135 @@
     document.querySelectorAll("[data-print-obs]").forEach((el) => (el.style.display = "block")));
   window.addEventListener("afterprint", () =>
     document.querySelectorAll("[data-print-obs]").forEach((el) => (el.style.display = "none")));
+
+  // ================= Encaixes =================
+  const PERIODO_TXT = { qualquer: "Qualquer horário", manha: "Manhã", tarde: "Tarde" };
+  const HORA_SUGERIDA = { qualquer: "08:00", manha: "08:00", tarde: "14:00" };
+  let encaixes = [];
+
+  async function contarEncaixes() {
+    const { count, error } = await sb.from("encaixes").select("id", { count: "exact", head: true }).eq("status", "pendente");
+    if (error) return;
+    const b = $("badge-encaixes");
+    b.textContent = count;
+    b.classList.toggle("oculto", !count);
+  }
+
+  $("en-status").addEventListener("change", () => carregarEncaixes());
+  $("en-data").addEventListener("change", () => carregarEncaixes());
+  $("en-limpar").addEventListener("click", () => { $("en-data").value = ""; carregarEncaixes(); });
+  $("en-atualizar").addEventListener("click", () => carregarEncaixes());
+
+  async function carregarEncaixes(silencioso = false) {
+    if (!silencioso) $("en-lista").innerHTML = `<p class="muted">Carregando...</p>`;
+    let q = sb.from("encaixes").select("*").order("data").order("created_at");
+    if ($("en-status").value) q = q.eq("status", $("en-status").value);
+    if ($("en-data").value) q = q.eq("data", $("en-data").value);
+    else if ($("en-status").value === "pendente") q = q.gte("data", hojeSP());
+    const { data, error } = await q;
+    if (error) { $("en-lista").innerHTML = `<p class="erro">${esc(msgErro(error))}</p>`; return; }
+    encaixes = data;
+    renderEncaixes();
+    contarEncaixes();
+  }
+
+  function linkZap(tel, msg) {
+    return `https://wa.me/55${String(tel).replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
+  }
+
+  function msgResposta(e, hora) {
+    const local = cfg.NOME_LOCAL ? ` no ${cfg.NOME_LOCAL}` : "";
+    if (e.status === "aprovado" || hora) {
+      return `Olá, ${e.nome.split(" ")[0]}! Seu encaixe de checklist${local} foi APROVADO para ${fmtData(e.data)}` +
+        `${hora ? ` às ${hora}` : ""}. Placa ${e.placa}. Código: ${e.codigo}. ` +
+        `Chegue com ${cfg.CHEGAR_ANTES_MIN || 15} minutos de antecedência.${e.resposta ? " " + e.resposta : ""}`;
+    }
+    return `Olá, ${e.nome.split(" ")[0]}. Infelizmente não foi possível encaixar o checklist${local} em ${fmtData(e.data)} ` +
+      `(placa ${e.placa}).${e.resposta ? " " + e.resposta : ""} Você pode tentar outro dia pelo site.`;
+  }
+
+  function renderEncaixes() {
+    const lista = $("en-lista");
+    if (!encaixes.length) {
+      lista.innerHTML = `<div class="card"><p class="muted" style="margin:0">Nenhum pedido de encaixe ${
+        $("en-status").value === "pendente" ? "pendente" : "encontrado"}.</p></div>`;
+      return;
+    }
+    const ST = { pendente: ["st-fila", "PENDENTE"], aprovado: ["st-concluido", "APROVADO"], recusado: ["st-pendencia", "RECUSADO"] };
+    lista.innerHTML = encaixes.map((e) => `
+      <div class="agend encaixe" data-id="${e.id}">
+        <div class="agend-topo">
+          <div>
+            <div class="agend-nome">${esc(e.nome)}</div>
+            <div class="agend-info">${esc(e.transportadora)} · <a href="tel:+55${esc(e.telefone)}">${esc(fmtTel(e.telefone))}</a>
+              · código <b>${esc(e.codigo)}</b></div>
+            <div class="placas">${esc(e.placa)}</div>
+          </div>
+          <div class="agend-lado">
+            <span class="status ${ST[e.status][0]}">${ST[e.status][1]}</span>
+            <span class="encaixe-quando">${esc(fmtData(e.data))} · ${esc(PERIODO_TXT[e.periodo])}</span>
+          </div>
+        </div>
+        ${e.motivo ? `<div class="encaixe-motivo">“${esc(e.motivo)}”</div>` : ""}
+        <div class="agend-info">Pedido em ${esc(new Date(e.created_at).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" }))}
+          ${e.resposta ? ` · Resposta: ${esc(e.resposta)}` : ""}</div>
+        ${e.status === "pendente" ? `
+          <div class="encaixe-acoes">
+            <div><label>Horário</label><input type="time" data-campo="hora" value="${HORA_SUGERIDA[e.periodo]}"></div>
+            <div style="flex:2 1 220px"><label>Mensagem ao motorista <span class="opc">(opcional)</span></label>
+              <input data-campo="resposta" maxlength="200" placeholder="Ex.: Chegue às 07:45 pela portaria 2"></div>
+            <div class="encaixe-botoes">
+              <button class="btn-primario" data-acao="aprovar">Aprovar e agendar</button>
+              <button class="btn-perigo" data-acao="recusar">Recusar</button>
+            </div>
+          </div>` : `
+          <div class="acoes">
+            <a class="btn btn-zap" target="_blank" rel="noopener" href="${esc(linkZap(e.telefone, msgResposta(e)))}">Avisar no WhatsApp</a>
+          </div>`}
+      </div>`).join("");
+  }
+
+  $("en-lista").addEventListener("click", async (ev) => {
+    const btn = ev.target.closest("[data-acao]");
+    if (!btn) return;
+    const card = btn.closest(".encaixe");
+    const e = encaixes.find((x) => x.id === Number(card.dataset.id));
+    if (!e) return;
+    const resposta = card.querySelector('[data-campo="resposta"]')?.value.trim() || null;
+
+    if (btn.dataset.acao === "recusar" && !btn.classList.contains("confirmar")) {
+      btn.classList.add("confirmar"); btn.textContent = "Confirmar recusa";
+      setTimeout(() => { btn.classList.remove("confirmar"); btn.textContent = "Recusar"; }, 4000);
+      return;
+    }
+    card.querySelectorAll("button").forEach((b) => (b.disabled = true));
+    let erro;
+    let hora = null;
+    if (btn.dataset.acao === "aprovar") {
+      hora = card.querySelector('[data-campo="hora"]').value;
+      if (!hora) { toast("Escolha o horário do encaixe.", "erro"); card.querySelectorAll("button").forEach((b) => (b.disabled = false)); return; }
+      ({ error: erro } = await sb.rpc("aprovar_encaixe", { p_id: e.id, p_hora: hora, p_resposta: resposta }));
+    } else {
+      ({ error: erro } = await sb.from("encaixes")
+        .update({ status: "recusado", resposta, respondido_em: new Date().toISOString() })
+        .eq("id", e.id).eq("status", "pendente"));
+    }
+    if (erro) { toast(msgErro(erro), "erro"); card.querySelectorAll("button").forEach((b) => (b.disabled = false)); return; }
+
+    const atualizado = { ...e, status: btn.dataset.acao === "aprovar" ? "aprovado" : "recusado", resposta };
+    toast(atualizado.status === "aprovado" ? "Encaixe aprovado e agendado." : "Pedido recusado.", "ok");
+    // abre o aviso pronto para enviar
+    card.innerHTML = `
+      <div class="agend-nome">${esc(e.nome)} · ${esc(e.placa)}</div>
+      <p class="agend-info">${atualizado.status === "aprovado"
+        ? `Agendado para ${esc(fmtData(e.data))} às ${esc(hora)}. Já aparece na Agenda do dia.`
+        : "Pedido recusado."} Avise o motorista:</p>
+      <div class="acoes">
+        <a class="btn btn-zap" target="_blank" rel="noopener" href="${esc(linkZap(e.telefone, msgResposta(atualizado, hora)))}">Avisar no WhatsApp</a>
+        <a class="btn" href="tel:+55${esc(e.telefone)}">Ligar</a>
+      </div>`;
+    contarEncaixes();
+  });
 
   // ================= Utilidades =================
   // Linha de identificação: só mostra o que foi informado

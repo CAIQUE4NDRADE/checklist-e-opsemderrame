@@ -76,6 +76,13 @@
         <div class="slots" id="lista-slots"></div>
         <p class="muted" id="slots-msg"></p>
         <p class="legenda"><span><i class="livre"></i>Disponível</span><span><i class="lotado"></i>Lotado</span></p>
+        <div class="encaixe-cta" id="encaixe-cta" data-so="checklist">
+          <div>
+            <b id="encaixe-cta-titulo">Não encontrou horário?</b>
+            <span>Peça um encaixe. A equipe analisa e entra em contato pelo telefone.</span>
+          </div>
+          <button type="button" class="btn-primario" id="btn-encaixe">Solicitar encaixe</button>
+        </div>
       </div>
 
       <!-- Passo 2: dados -->
@@ -118,6 +125,70 @@
         <p class="erro" id="form-erro" role="alert"></p>
         <button type="submit" class="btn-primario btn-bloco" id="btn-agendar">Confirmar agendamento</button>
       </form>
+
+      <!-- Encaixe: pedido -->
+      <form class="card oculto" id="passo-encaixe" novalidate>
+        <span class="chip chip-encaixe">Solicitação de encaixe · Checklist</span>
+        <h2 style="margin-top:12px">Pedir encaixe</h2>
+        <p class="muted" style="margin-top:-6px">O encaixe depende de disponibilidade. Você só está agendado depois que a equipe aprovar.</p>
+
+        <div class="grid2">
+          <div>
+            <label for="e-data">Dia desejado</label>
+            <input id="e-data" type="date">
+          </div>
+          <div>
+            <label for="e-periodo">Período</label>
+            <select id="e-periodo">
+              <option value="qualquer">Qualquer horário</option>
+              <option value="manha">Manhã</option>
+              <option value="tarde">Tarde</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="e-nome">Nome completo</label>
+        <input id="e-nome" autocomplete="name">
+
+        <label for="e-placa">Placa do caminhão (cavalo)</label>
+        <input id="e-placa" class="placa" autocapitalize="characters" placeholder="ABC1D23">
+
+        <label for="e-transportadora">Transportadora</label>
+        <input id="e-transportadora">
+
+        <label for="e-telefone">Telefone (com DDD)</label>
+        <input id="e-telefone" inputmode="tel" autocomplete="tel" placeholder="(19) 99999-9999">
+
+        <label for="e-motivo">Motivo <span class="opc">(opcional)</span></label>
+        <textarea id="e-motivo" rows="2" maxlength="300" placeholder="Ex.: carregamento programado para amanhã cedo"></textarea>
+
+        <label class="check" for="e-consentimento">
+          <input type="checkbox" id="e-consentimento">
+          <span>Autorizo o uso dos meus dados para este pedido, conforme a
+            <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a>.</span>
+        </label>
+
+        <p class="erro" id="encaixe-erro" role="alert"></p>
+        <button type="submit" class="btn-primario btn-bloco" id="btn-enviar-encaixe">Enviar pedido de encaixe</button>
+        <button type="button" class="btn-bloco" id="btn-voltar-encaixe" style="margin-top:10px">Voltar para os horários</button>
+      </form>
+
+      <!-- Encaixe: enviado -->
+      <div class="card confirmacao confirmacao-encaixe oculto" id="passo-encaixe-ok">
+        <h2>Pedido de encaixe enviado</h2>
+        <div class="resumo" id="eok-resumo"></div>
+        <p class="muted" style="margin-bottom:0">Código do pedido:</p>
+        <div class="codigo" id="eok-codigo"></div>
+        <div class="instrucoes-dia instrucoes-encaixe">
+          <h3>E agora?</h3>
+          <ol class="orientacoes">
+            <li>A equipe vai analisar e entrar em contato pelo telefone <b id="eok-telefone"></b>.</li>
+            <li><b>Não venha antes da confirmação.</b> O pedido ainda não é um agendamento.</li>
+            <li>Acompanhe a resposta na aba <b>Meu agendamento</b> com a placa e este código.</li>
+          </ol>
+        </div>
+        <button class="btn-bloco" id="btn-encaixe-novo">Voltar ao início</button>
+      </div>
 
       <!-- Passo 3: confirmação -->
       <div class="card confirmacao oculto" id="passo-ok">

@@ -43,6 +43,7 @@
     <div id="tela-app" class="oculto">
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-aba="dia">Agenda do dia</button>
+        <button class="tab" role="tab" aria-selected="false" data-aba="encaixes">Encaixes <span class="badge oculto" id="badge-encaixes">0</span></button>
         <button class="tab" role="tab" aria-selected="false" data-aba="checkin">Check-in</button>
         <button class="tab" role="tab" aria-selected="false" data-aba="horarios">Horários</button>
         <button class="tab" role="tab" aria-selected="false" data-aba="relatorios">Relatórios</button>
@@ -84,6 +85,32 @@
         <h2 id="d-titulo" style="font-size:1.1rem;margin:4px 0"></h2>
         <div class="kpis" id="d-kpis"></div>
         <div id="d-lista"></div>
+      </section>
+
+      <!-- ----- Encaixes ----- -->
+      <section id="aba-encaixes" class="oculto">
+        <div class="card nao-imprimir">
+          <div class="barra">
+            <div>
+              <label for="en-status">Mostrar</label>
+              <select id="en-status">
+                <option value="pendente">Pendentes</option>
+                <option value="aprovado">Aprovados</option>
+                <option value="recusado">Recusados</option>
+                <option value="">Todos</option>
+              </select>
+            </div>
+            <div>
+              <label for="en-data">Dia <span class="opc">(opcional)</span></label>
+              <input id="en-data" type="date">
+            </div>
+            <div style="flex:0 0 auto;display:flex;gap:8px">
+              <button id="en-limpar">Todos os dias</button>
+              <button id="en-atualizar">Atualizar</button>
+            </div>
+          </div>
+        </div>
+        <div id="en-lista"></div>
       </section>
 
       <!-- ----- Check-in ----- -->
