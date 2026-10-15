@@ -273,14 +273,12 @@
 
     const curso = tipo === "curso_osd";
     $("ok-ident").textContent = curso ? "o seu CPF" : "a placa do caminhão";
-    $("ok-orientacao").innerHTML = `<b>Antes de vir:</b> ${esc(textoOri(
-      (curso ? cfg.ORIENTACOES_CURSO : cfg.ORIENTACOES_CHECKLIST)?.[0] || ""))}
-      <a href="#" id="ver-orientacoes">Ver todas as orientações</a>`;
-    $("ver-orientacoes").addEventListener("click", (e) => {
-      e.preventDefault();
-      document.querySelector('.tab[data-aba="orientacoes"]').click();
-      window.scrollTo({ top: 0 });
-    });
+    // Instruções completas do serviço agendado, logo na confirmação
+    const instrucoes = ((curso ? cfg.ORIENTACOES_CURSO : cfg.ORIENTACOES_CHECKLIST) || []).map(textoOri);
+    $("ok-orientacao").innerHTML = instrucoes.length ? `
+      <h3>Siga estas instruções no dia</h3>
+      <p class="muted">Para não esquecer nada, tire um print desta tela.</p>
+      <ol class="orientacoes">${instrucoes.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>` : "";
 
     const mapa = $("btn-maps");
     mapa.classList.toggle("oculto", !cfg.MAPS_URL);
@@ -291,7 +289,7 @@
       titulo: `${NOME_TIPO[tipo]} — ${cfg.NOME_LOCAL || ""}`,
       ...ag,
       local: cfg.ENDERECO || cfg.NOME_LOCAL || "",
-      descricao: `Código de confirmação: ${codigo}. Chegue com ${cfg.CHEGAR_ANTES_MIN || 15} minutos de antecedência.`,
+      descricao: `Código de confirmação: ${codigo}.\n\nInstruções:\n` + instrucoes.map((t, i) => `${i + 1}. ${t}`).join("\n"),
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

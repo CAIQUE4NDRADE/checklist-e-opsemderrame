@@ -552,3 +552,14 @@ select.sel-status { min-height: 40px; }
   background: #fff; padding: 6px 10px; border-radius: 10px; box-shadow: none;
 }
 @media (max-width: 560px) { .marca img.logo-oficial { height: 40px; max-width: 110px; } }
+
+/* Instruções do dia na confirmação */
+.instrucoes-dia {
+  text-align: left; margin-top: 18px; padding: 16px;
+  background: var(--warn-soft); border: 1px solid var(--warn); border-left-width: 5px; border-radius: 12px;
+}
+.instrucoes-dia:empty { display: none; }
+.instrucoes-dia h3 { margin: 0 0 2px; font-size: 1.2rem; color: var(--warn); }
+.instrucoes-dia .muted { margin: 0 0 12px; }
+.instrucoes-dia .orientacoes { gap: 8px; }
+.instrucoes-dia .orientacoes li { color: var(--text); }
