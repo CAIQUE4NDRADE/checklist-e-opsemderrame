@@ -1,115 +1,190 @@
-# Agenda de Checklist
+Readme · MD
+Agenda Operacional BPA
 
-Sistema de agendamento do **checklist de caminhões** e do **Curso Operação Sem Derrame** (turma toda terça). O motorista lê um **QR code**, escolhe o que quer agendar, o dia e o horário no celular e preenche os dados. A equipe acompanha tudo num **painel do operador**.
+Sistema web de agendamento do checklist de caminhões e do Curso Operação Sem Derrame no Terminal de Paulínia (BPA).
 
-- **Frontend:** HTML + JavaScript puro (sem build), hospedado no **GitHub Pages**
-- **Backend:** **Supabase** (Postgres + Auth + regras de segurança)
+O motorista lê um QR code na portaria, escolhe o serviço, o dia e o horário pelo celular e recebe um código de confirmação. A equipe acompanha tudo em um painel único: fila do dia, check-in no gate, pedidos de encaixe, turmas do curso, certificados e relatórios.
 
-## Como funciona
+Site do motorista: https://caique4ndrade.github.io/checklist-e-opsemderrame/
+Painel do operador: https://caique4ndrade.github.io/checklist-e-opsemderrame/admin.html
+Custo de operação: R$ 0 (GitHub Pages + Supabase no plano gratuito)
+Ganho operacional
+Antes e depois
 
-| Página | Quem usa | O que faz |
-|---|---|---|
-| `index.html` | Motorista (via QR code) | Escolhe **checklist** ou **curso**. No checklist: dia/horário, preenche nome, CPF, placas e validades (CNH, MOPP, NR-20, NR-35), recebe um **código de 6 caracteres** + QR. No curso: escolhe a terça e informa só os dados pessoais. Pode consultar e cancelar depois. Links diretos: `index.html#curso` e `index.html#checklist`. |
-| `admin.html` | Operador (login) | Agenda do dia por tipo (checklist ou turma do curso), troca de status (FILA / CONCLUÍDO / PENDÊNCIA / CANCELADO), observações, alertas de documentos vencidos ou vencendo, busca por código/placa/CPF, geração de horários em lote e cartaz do QR code para imprimir. |
+Ajuste a coluna "Antes" com a realidade do terminal, se algum ponto for diferente.
 
-### Segurança e LGPD
+Processo	Antes	Com a Agenda Operacional
+Marcar checklist	Por telefone ou WhatsApp com a portaria, um motorista por vez	O motorista agenda sozinho pelo celular, 24 horas por dia, sem ocupar a equipe
+Ver vagas	O motorista precisava perguntar	Horários livres em verde e lotados em vermelho, em tempo real
+Sem vaga no dia	Pedido informal, sem registro	Pedido de encaixe registrado, com fila de aprovação no painel e resposta pronta para WhatsApp
+Confirmação	Combinado verbal	Código de 6 caracteres + QR code + instruções do dia na tela
+Instruções (EPI, documentos)	Explicadas uma a uma, ou o motorista chegava sem saber	Mostradas na confirmação e na aba "Antes de vir", e vão junto no evento da agenda do celular
+Transferência Raízen sem checklist da garagem	Descoberto só na chegada, checklist perdido	Exigência avisada antes, no ato do agendamento
+Chegada na portaria	Busca manual em lista	Check-in pela câmera lendo o QR do motorista ou digitando o código
+Desistência	O horário ficava preso	O motorista cancela pelo site e a vaga volta na hora
+Curso Operação Sem Derrame	Lista de inscritos montada à mão	Inscrição online por terça-feira, lista de presença para imprimir e certificado em PDF
+Relatórios	Planilha preenchida manualmente	Exportação para Excel por período, em um clique, com resumo por dia
+Onde o ganho aparece
 
-- O motorista **não tem acesso às tabelas**. Ele só chama funções específicas (`horarios_disponiveis`, `agendar`, `consultar_agendamento`, `cancelar_agendamento`) que nunca devolvem dados de outros motoristas.
-- A lista de horários mostra só a quantidade de vagas, sem nomes.
-- Só usuários cadastrados na tabela `operadores` veem os dados no painel (Row Level Security).
-- O agendamento trava o horário na hora de gravar, então dois motoristas não conseguem pegar a mesma última vaga.
-- No checklist, um CPF só pode ter um agendamento ativo por dia.
-- No curso, um CPF só pode estar inscrito numa próxima turma por vez (para trocar de data, cancela e inscreve de novo).
-- No curso, o status fica INSCRITO, CONCLUÍDO ou FALTOU.
+Gate e portaria
 
-## Passo a passo
+Menos ligações e mensagens para marcar e confirmar horário.
+Chegadas distribuídas pelos horários, sem acúmulo de caminhões no mesmo período.
+Check-in em segundos: o sistema já avisa se o agendamento é de outro dia, se foi cancelado ou se a chegada já foi registrada.
 
-### 1. Supabase
+Equipe de operações
 
-> Já rodou uma versão anterior do `schema.sql`? Rode o novo por cima: ele atualiza tabelas e funções sem apagar dados.
+Agenda do dia em uma tela, com contadores de fila, concluídos e pendências, atualizada a cada 30 segundos.
+Status e observações registrados no próprio agendamento, sem papel.
+Encaixes tratados com critério e com histórico: quem pediu, quando, o motivo e quem aprovou.
 
-1. Crie um projeto em [supabase.com](https://supabase.com) (o plano gratuito atende).
-2. Vá em **SQL Editor**, cole todo o conteúdo de `schema.sql` e clique em **Run**.
-3. Vá em **Authentication > Providers > Email** e **desative "Allow new users to sign up"**. Assim ninguém cria conta sozinho.
-4. Crie o usuário do operador em **Authentication > Users > Add user** (marque *Auto Confirm User*).
-5. Libere esse usuário como operador. No **SQL Editor**:
-   ```sql
-   insert into public.operadores (user_id, nome)
-   select id, 'Operador 1' from auth.users where email = 'operador@exemplo.com';
-   ```
-6. Copie a **Project URL** e a **anon public key** em **Project Settings > API**.
+Motorista e transportadora
 
-### 2. Configuração
+Sabe antes de sair se tem vaga.
+Chega sabendo o EPI exigido e os documentos necessários.
+Menos viagem perdida por falta de documento ou de horário.
 
-Edite `config.js`:
+Segurança e conformidade
 
-```js
-SUPABASE_URL: "https://xxxxxxxx.supabase.co",
-SUPABASE_ANON_KEY: "eyJhbGciOi...",
-NOME_LOCAL: "Terminal Paulínia",
-```
+As orientações de EPI e de documentos chegam a todo motorista, do mesmo jeito, antes da chegada.
+O Curso Operação Sem Derrame tem controle de turma, presença e conclusão.
+Os dados pessoais seguem a LGPD: consentimento obrigatório, acesso restrito e exclusão automática após 12 meses.
 
-A anon key pode ficar no código público: quem garante a segurança são as regras do banco. **Nunca** use a `service_role` key aqui.
+Gestão
 
-### 3. GitHub Pages
+Todo agendamento fica registrado com data, horário, status e horário de chegada, o que permite medir no-show, pendências e demanda por horário.
+Os números saem direto do Excel exportado, sem retrabalho.
+Como medir
 
-```bash
-git init
-git add .
-git commit -m "Agenda de checklist"
-git branch -M main
-git remote add origin https://github.com/SEU-USUARIO/agenda-checklist.git
-git push -u origin main
-```
+O próprio sistema gera os dados. Exporte o Excel em Painel > Relatórios e acompanhe:
 
-No GitHub: **Settings > Pages > Source: Deploy from a branch > main / (root)**. Em 1 ou 2 minutos o site fica em:
+Indicador	Como calcular	Antes	Depois
+Agendamentos feitos pelo site	Total de registros no período	—	___
+Ligações e mensagens evitadas	Agendamentos pelo site + cancelamentos pelo site	—	___
+Tempo da equipe economizado (h/mês)	Ligações evitadas × minutos por atendimento ÷ 60	___	___
+Taxa de no-show	Agendados sem chegada ÷ total agendado	___	___
+Checklists com pendência	Status PENDÊNCIA ÷ total realizado	___	___
+Encaixes atendidos	Encaixes aprovados ÷ pedidos de encaixe	—	___
+Ocupação da agenda	Agendados ÷ vagas disponíveis	___	___
+Participação no curso	Concluíram ÷ inscritos	___	___
 
-- Motorista: `https://SEU-USUARIO.github.io/agenda-checklist/`
-- Painel: `https://SEU-USUARIO.github.io/agenda-checklist/admin.html`
+Exemplo de cálculo do tempo economizado: se a equipe gastava em média X minutos por agendamento por telefone e o site recebeu N agendamentos no mês, a economia é N × X ÷ 60 horas por mês. Preencha com os números reais do terminal.
 
-### 4. Primeiro uso
+Funcionalidades
+Motorista (index.html, sem login)
+Checklist do caminhão: escolhe o dia e o horário e informa nome, placa, transportadora e telefone.
+Curso Operação Sem Derrame: escolhe a terça-feira e informa nome, CPF e transportadora.
+Etapas numeradas: Serviço → Data e horário → Seus dados → Confirmação. No celular aparecem em versão compacta.
+Horários livres em verde e lotados em vermelho. Horários que já passaram não aparecem.
+Solicitar encaixe quando não há vaga: o motorista informa dia, período e motivo e acompanha a resposta.
+Confirmação com código, QR code, instruções do dia, "Adicionar à minha agenda" (com as instruções no evento) e "Como chegar".
+Aba Meu agendamento: consulta e cancela com o código + a placa (checklist) ou o CPF (curso).
+Aba Antes de vir: orientações completas do checklist e do curso.
+Pode ser instalado como app na tela inicial do celular.
+Operador (admin.html, com login)
+Agenda do dia: checklist ou turma do curso, com contadores, busca por código, nome, placa, CPF ou telefone, troca de status, observações, registro de chegada e lixeira com confirmação.
+Encaixes: pedidos pendentes com um contador no topo, aprovação com escolha de horário (cria o agendamento na hora), recusa e botão Avisar no WhatsApp com a mensagem pronta.
+Check-in: leitura do QR do motorista pela câmera ou pelo código digitado.
+Horários: geração em lote (checklist de segunda a sábado; curso toda terça por 1 ano), ajuste de vagas, abertura e fechamento de horários.
+Relatórios: Excel por período e limpeza manual de dados antigos (LGPD).
+QR Code: cartaz para imprimir (geral, só checklist ou só curso).
+Curso: lista de presença para imprimir e certificados em PDF de quem concluiu.
+Segurança e LGPD
+O motorista não acessa as tabelas. Ele só usa funções específicas que nunca devolvem dados de outras pessoas.
+A lista de horários mostra só a quantidade de vagas, sem nomes.
+Só usuários cadastrados como operador veem e alteram dados (Row Level Security no Postgres).
+O agendamento trava o horário na hora de gravar, então dois motoristas não pegam a mesma última vaga.
+Regras de duplicidade:
+Checklist: uma placa só pode ter um agendamento ativo por dia.
+Curso: um CPF só pode estar inscrito em uma próxima turma por vez.
+Encaixe: um pedido pendente por placa e por dia.
+O consentimento de uso de dados é obrigatório e há uma página de política de privacidade.
+Os dados com mais de 12 meses são apagados (manual pelo painel ou automático com 3_limpeza_automatica.sql).
+A chave publicada no config.js é a publishable, pública por design. A chave secreta nunca vai para o site.
+Tecnologia
+Parte	Ferramenta
+Site	HTML, CSS e JavaScript puro, sem etapa de build
+Hospedagem	GitHub Pages
+Banco, login e regras	Supabase (PostgreSQL + Auth + RLS)
+Bibliotecas (CDN)	supabase-js, qrcodejs, html5-qrcode (check-in), SheetJS (Excel), jsPDF (certificados)
 
-1. Entre no painel e, na aba **Horários**, gere os horários:
-   - **Checklist:** já vem preenchido com 04:00, 05:00, 08:00, 09:00, 10:00, 16:00 e 17:00, de segunda a sábado.
-   - **Curso Operação Sem Derrame:** escolha o tipo e o formulário se preenche com toda terça, 08:00 às 12:00, 20 vagas, por 1 ano. Ajuste horário e vagas antes de gerar. Repita no ano seguinte.
-2. Na aba **QR Code**, escolha se o cartaz é para tudo, só curso ou só checklist, imprima e cole na portaria.
-3. Na aba **Checklist do dia**, acompanhe a fila. A página se atualiza sozinha a cada 30 segundos.
+Limite do plano gratuito: o Supabase pausa o projeto depois de 7 dias sem nenhum acesso. Com uso diário isso não acontece. Se pausar, basta reativar no painel do Supabase.
 
-## Testando localmente
+Instalação
+1. Supabase
+Crie um projeto em supabase.com.
+SQL Editor > New query: cole o conteúdo de schema.sql e clique em Run. O arquivo pode ser rodado de novo em atualizações, sem apagar dados.
+Authentication > Sign In / Providers: desligue Allow new users to sign up.
+Crie o primeiro operador (veja "Operação do dia a dia").
+Opcional: rode 3_limpeza_automatica.sql para a limpeza mensal automática (LGPD).
+2. Configuração
 
-Os arquivos são estáticos, então basta um servidor simples:
+Em config.js, preencha:
 
-```bash
-python -m http.server 8000
-```
+SUPABASE_URL e SUPABASE_ANON_KEY (chave publishable, em Project Settings > API Keys);
+nome do local, telefone do gate, endereço, orientações do checklist e do curso, carga horária e assinatura do certificado.
+3. GitHub Pages
+Suba todos os arquivos na raiz do repositório, sem pastas.
+Settings > Pages > Deploy from a branch > main / (root) > Save.
+4. Primeiro uso
+Painel > Horários: gere os horários do checklist e as terças do curso.
+Painel > QR Code: imprima o cartaz e coloque na portaria.
+Faça um agendamento de teste pelo celular.
+Operação do dia a dia
 
-E abra `http://localhost:8000`.
+Adicionar um operador
 
-## Estrutura
+Supabase > Authentication > Users > Add user > Create new user (e-mail, senha provisória, Auto Confirm User).
+No SQL Editor:
+sql
+insert into public.operadores (user_id, nome)
+select id, 'Nome do colega' from auth.users
+ where lower(email) = lower('email.do.colega@raizen.com')
+on conflict (user_id) do nothing;
 
-Todos os arquivos ficam na raiz do repositório (sem pastas):
+Ver quem é operador
 
-```
-index.html            # página do motorista
-admin.html            # painel do operador (agenda, check-in, horários, relatórios, QR)
-privacidade.html      # política de privacidade (LGPD)
-config.js             # chave do Supabase, nome, contatos, orientações e regras
-styles.css            # visual
-common.js             # funções comuns, rodapé, calendário
-agendar.js            # lógica do motorista
-admin.js              # lógica do painel
-manifest.webmanifest  # instalar como app no celular
-sw.js                 # suporte ao modo app
-icon*.png, icon.svg   # ícones
-schema.sql            # banco: tabelas, regras e funções (pode rodar de novo)
-2_operador.sql        # libera o primeiro operador
-3_limpeza_automatica.sql  # opcional: apaga dados com mais de 12 meses todo mês
-```
+sql
+select o.nome, u.email from public.operadores o join auth.users u on u.id = o.user_id;
 
+Trocar a senha de um operador
 
-## Ideias para depois
+sql
+update auth.users
+   set encrypted_password = extensions.crypt('NovaSenha@123', extensions.gen_salt('bf'))
+ where lower(email) = lower('email.do.colega@raizen.com');
 
-- Leitor de QR no painel (câmera) para dar check-in pelo código do motorista
-- Aviso por WhatsApp ou e-mail na véspera do horário
-- Bloqueio automático do agendamento se o MOPP já estiver vencido
-- Relatório mensal em Excel
+Tirar o acesso de um operador
+
+sql
+delete from public.operadores
+ where user_id = (select id from auth.users where lower(email) = lower('email.do.colega@raizen.com'));
+
+Atualizar o site: suba no GitHub só os arquivos alterados (Add file > Upload files > Commit changes) e aperte Ctrl+F5. Quando houver mudança no schema.sql, rode o arquivo no Supabase antes de subir os outros.
+
+Estrutura
+
+Todos os arquivos ficam na raiz do repositório:
+
+index.html                # site do motorista
+admin.html                # painel do operador
+privacidade.html          # política de privacidade (LGPD)
+config.js                 # chave do Supabase, contatos, orientações e regras
+styles.css                # visual (cores institucionais, tema claro e escuro)
+common.js                 # funções comuns, rodapé, logo, calendário
+agendar.js                # lógica do motorista (agendamento, encaixe, consulta)
+admin.js                  # lógica do painel (agenda, encaixes, check-in, relatórios)
+manifest.webmanifest      # instalar como app no celular
+sw.js                     # suporte ao modo app
+icon.svg, icon-*.png      # ícones
+schema.sql                # banco: tabelas, regras de segurança e funções
+2_operador.sql            # libera o primeiro operador
+3_limpeza_automatica.sql  # opcional: limpeza mensal de dados com mais de 12 meses
+Próximos passos
+Campo de e-mail no formulário do curso, para enviar o certificado.
+Botão "Trocar minha senha" no painel.
+Mostrar os horários que já passaram como "Encerrado".
+Aviso automático na véspera do horário.
+Logo oficial no cabeçalho, depois da aprovação da comunicação.
+
+Desenvolvido por Caique Andrade, Operações BPA.
