@@ -433,7 +433,9 @@
   let encaixes = [];
 
   async function contarEncaixes() {
-    const { count, error } = await sb.from("encaixes").select("id", { count: "exact", head: true }).eq("status", "pendente");
+    // Mesma regra da lista "Pendentes": só pedidos de hoje em diante (pedidos de dias que já passaram não contam)
+    const { count, error } = await sb.from("encaixes").select("id", { count: "exact", head: true })
+      .eq("status", "pendente").gte("data", hojeSP());
     if (error) return;
     const b = $("badge-encaixes");
     b.textContent = count;
