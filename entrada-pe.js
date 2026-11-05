@@ -66,11 +66,14 @@
     const div = document.createElement("div");
     div.className = "pe-pessoa";
     div.innerHTML = `
-      <div class="pe-pessoa-topo">
-        <select aria-label="Função" data-campo="funcao">
-          <option value="motorista">Motorista</option><option value="monitor">Monitor</option>
-        </select>
-        <button type="button" class="btn-peq pe-remover" aria-label="Remover pessoa">Remover</button>
+      <div>
+        <label for="pe-func-${n}">Função</label>
+        <div class="pe-pessoa-topo">
+          <select id="pe-func-${n}" data-campo="funcao">
+            <option value="motorista">Motorista</option><option value="monitor">Monitor</option>
+          </select>
+          <button type="button" class="btn-peq pe-remover" aria-label="Remover pessoa">Remover</button>
+        </div>
       </div>
       <div>
         <label for="pe-nome-${n}">Nome completo</label>

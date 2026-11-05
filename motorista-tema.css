@@ -97,18 +97,19 @@ button, .btn { border-radius: 12px; font-weight: 700; }
 #passo-pe h3 { color: var(--pt-verde); }
 @media (prefers-color-scheme: dark) { #passo-pe h3 { color: var(--primary); } }
 .pe-pessoa {
-  display: grid; grid-template-columns: 150px 1fr 190px; gap: 0 10px; align-items: end;
+  display: grid; grid-template-columns: 1fr 200px; gap: 8px 10px; align-items: end;
   border: 1px solid var(--border); border-left: 4px solid var(--pt-lima); border-radius: 12px;
   padding: 10px 12px 12px; margin-bottom: 10px; background: var(--card);
 }
 .pe-pessoa label { margin-top: 0; }
 .pe-pessoa-topo { display: flex; gap: 8px; align-items: center; }
-.pe-pessoa-topo select { font-weight: 700; }
+.pe-pessoa-topo select { font-weight: 700; flex: 1; min-width: 140px; }
 .pe-remover { color: var(--danger); border-color: transparent; background: transparent; white-space: nowrap; }
 .pe-pessoa:first-child:last-child .pe-remover { visibility: hidden; }
-@media (max-width: 620px) {
-  .pe-pessoa { grid-template-columns: 1fr; gap: 8px; }
-  .pe-pessoa-topo select { flex: 1; }
+.pe-pessoa > div:first-child { grid-column: 1 / -1; }
+.pe-pessoa-topo select { max-width: 260px; }
+@media (max-width: 560px) {
+  .pe-pessoa { grid-template-columns: 1fr; }
 }
 .pe-lista-ok { list-style: none; padding: 0; margin: 14px auto; max-width: 420px; text-align: left; display: grid; gap: 6px; }
 .pe-lista-ok li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--gray-soft); font-weight: 600; }
