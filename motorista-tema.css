@@ -1,0 +1,88 @@
+/* =====================================================================
+   Tema da página do motorista (index.html) — mesmo visual do painel.
+   Só aparência: não muda nenhuma função do agendar.js.
+   ===================================================================== */
+:root { --pt-verde: #0d5c34; --pt-verde-esc: #0a4527; --pt-lima: #7ac143; }
+body { background: #eef2ef; }
+@media (prefers-color-scheme: dark) { body { background: var(--bg); } }
+
+/* ---------- Topo verde ---------- */
+header.topo {
+  background: linear-gradient(135deg, #0f6b3b 0%, #0a4527 70%, #083a21 100%);
+  color: #fff; border-bottom: 5px solid var(--pt-lima); padding: 22px 16px 26px;
+}
+header.topo h1 { font-family: var(--font-texto); font-weight: 800; letter-spacing: 0; }
+header.topo small { color: #d7eedd; opacity: 1; }
+header.topo .topo-desc { color: #e9f5ec; opacity: 1; }
+.marca-topo img { background: #fff; padding: 4px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.2); }
+
+/* ---------- Abas ---------- */
+main.wrap-estreito { padding-top: 18px; }
+.tabs { background: var(--card); border: 0; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+.tab { font-weight: 700; }
+.tab::before { font-family: "Font Awesome 6 Free"; font-weight: 900; margin-right: 8px; }
+.tab[data-aba="agendar"]::before { content: "\f073"; }
+.tab[data-aba="consultar"]::before { content: "\f002"; }
+.tab[data-aba="orientacoes"]::before { content: "\f05a"; }
+.tab[aria-selected="true"] { background: var(--pt-verde); color: #fff; }
+@media (prefers-color-scheme: dark) { .tab[aria-selected="true"] { background: var(--primary); color: #0f1712; } }
+@media (max-width: 520px) {
+  .tab { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; white-space: normal; font-size: .86rem; line-height: 1.15; }
+  .tab::before { margin: 0; font-size: 1.05rem; }
+}
+
+/* ---------- Cartões com faixa verde no título ---------- */
+.card { border: 0; border-radius: 16px; box-shadow: 0 4px 14px rgba(0,0,0,.06); }
+.card > h2:first-child {
+  margin: calc(-1 * clamp(18px, 3vw, 24px)) calc(-1 * clamp(18px, 3vw, 24px)) 18px;
+  padding: 15px clamp(18px, 3vw, 24px); border-radius: 16px 16px 0 0;
+  background: var(--pt-verde-esc); color: #fff; font-family: var(--font-texto); font-weight: 700; font-size: 1.15rem;
+}
+.confirmacao > h2:first-child { background: #1f9d55; }
+.confirmacao-encaixe > h2:first-child { background: #b45309; }
+
+/* ---------- Etapas ---------- */
+.etapas li::before { border-color: #cfd8d2; }
+.etapas li.atual { color: var(--pt-verde); box-shadow: inset 0 -3px 0 var(--pt-lima); }
+.etapas li.atual::before { border-color: var(--pt-verde); color: var(--pt-verde); }
+.etapas li.feita::before, .etapas li.feita::after { background: var(--pt-lima); border-color: var(--pt-lima); }
+.etapa-barra i { background: var(--pt-verde); }
+
+/* ---------- Escolha do serviço ---------- */
+.tipo-opcao {
+  display: grid; grid-template-columns: 56px 1fr; column-gap: 14px; align-items: start; text-align: left;
+  border: 1px solid var(--border); background: var(--card);
+}
+.tipo-opcao::before {
+  grid-row: 1 / span 2; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+  font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 1.35rem; color: #fff;
+}
+.tipo-opcao[data-tipo="checklist"]::before { content: "\f0d1"; background: #3aa655; }
+.tipo-opcao[data-tipo="curso_osd"]::before { content: "\f19d"; background: #2d7be5; }
+.tipo-opcao[data-tipo="checklist"], .tipo-opcao[data-tipo="curso_osd"] { border-left: 1px solid var(--border); }
+.tipo-opcao:hover { border-color: var(--pt-lima); }
+
+/* ---------- Dias e horários ---------- */
+.dia { border-radius: 12px; }
+.dia[aria-pressed="true"] { background: var(--pt-verde); border-color: var(--pt-verde); color: #fff; }
+.slot { border-radius: 12px; }
+.slot:not(:disabled) { border-left: 4px solid var(--pt-lima); }
+.slot[aria-pressed="true"] { border-color: var(--pt-verde); background: #e3f6e8; }
+.chip { background: #e3f6e8; color: var(--pt-verde); }
+
+/* ---------- Botões ---------- */
+button, .btn { border-radius: 12px; font-weight: 700; }
+.btn-primario { background: var(--pt-verde); border-color: var(--pt-verde); box-shadow: 0 4px 12px rgba(13,92,52,.22); }
+.btn-primario:hover { background: var(--pt-verde-esc); }
+@media (prefers-color-scheme: dark) { .btn-primario { background: var(--primary); border-color: var(--primary); color: #0f1712; } }
+.encaixe-cta { border-radius: 14px; }
+
+/* ---------- Confirmação ---------- */
+.codigo { color: var(--pt-verde); }
+@media (prefers-color-scheme: dark) { .codigo { color: var(--primary); } }
+.orientacoes li::marker { color: var(--pt-verde); }
+
+/* ---------- Rodapé ---------- */
+.rodape { background: var(--card); }
+
+@media print { header.topo { background: none; color: #000; } }

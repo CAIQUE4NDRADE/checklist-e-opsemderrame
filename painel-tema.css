@@ -1,0 +1,155 @@
+/* =====================================================================
+   Tema do painel (admin.html) — mesmo visual do Gestão Operacional V30.
+   Só aparência: não muda nenhuma função do admin.js.
+   ===================================================================== */
+:root {
+  --pt-verde: #0d5c34;
+  --pt-verde-esc: #0a4527;
+  --pt-lima: #7ac143;
+  --pt-lado: 240px;
+}
+body { background: #eef2ef; font-family: var(--font-texto); }
+@media (prefers-color-scheme: dark) { body { background: var(--bg); } }
+
+/* ---------- Barra superior ---------- */
+header.topo {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--card); color: var(--text);
+  border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(0,0,0,.04);
+  padding: 14px 24px;
+}
+header.topo .wrap { max-width: none; }
+header.topo .marca { gap: 14px; }
+header.topo .marca::before { content: ""; width: 6px; height: 44px; border-radius: 4px; background: var(--pt-lima); flex: 0 0 auto; }
+header.topo h1 { font-family: var(--font-texto); font-weight: 700; font-size: 1.35rem; letter-spacing: 0; }
+header.topo small { color: var(--muted); opacity: 1; }
+header.topo button { border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px; font-weight: 700; }
+header.topo button:hover { background: var(--gray-soft); }
+
+/* ---------- Menu lateral (só depois do login) ---------- */
+.pt-lado { display: none; }
+@media (min-width: 900px) {
+  body:has(#tela-app:not(.oculto)) { padding-left: var(--pt-lado); }
+  body:has(#tela-app:not(.oculto)) header.topo .marca img { display: none; }
+  body:has(#tela-app:not(.oculto)) .pt-lado {
+    display: block; position: fixed; z-index: 60; top: 0; left: 0; width: var(--pt-lado);
+    padding: 28px 16px 20px; text-align: center; color: #fff;
+  }
+  .pt-logo { font-size: 2.3rem; font-weight: 800; letter-spacing: -1px; text-transform: lowercase; line-height: 1; }
+  .pt-versao { font-size: .9rem; font-weight: 700; margin-top: 8px; opacity: .95; }
+  body:has(#tela-app:not(.oculto))::before {
+    content: ""; position: fixed; inset: 0 auto 0 0; width: var(--pt-lado); z-index: 55;
+    background: linear-gradient(180deg, #0f6b3b 0%, #0a4527 70%, #083a21 100%);
+  }
+  #tela-app .tabs {
+    position: fixed; z-index: 61; top: 128px; left: 0; width: var(--pt-lado);
+    display: flex; flex-direction: column; gap: 4px; padding: 16px 12px;
+    background: transparent; border: 0; border-top: 1px solid rgba(255,255,255,.12);
+    border-radius: 0; box-shadow: none; margin: 0;
+  }
+  #tela-app .tab {
+    flex: 0 0 auto; white-space: normal;
+    display: flex; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 12px 16px;
+    border-radius: 10px; color: #e9f5ec; background: transparent; text-align: left; font-size: 1rem; font-weight: 600;
+  }
+  #tela-app .tab:hover { background: rgba(255,255,255,.10); color: #fff; }
+  #tela-app .tab[aria-selected="true"] { background: linear-gradient(90deg, #6fb43f, #4f9a2c); color: #fff; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+  #tela-app .tab .badge { margin-left: auto; }
+  main.wrap { max-width: none; padding: 22px 24px 48px; }
+}
+
+/* Ícones das abas */
+.tab::before {
+  font-family: "Font Awesome 6 Free"; font-weight: 900; width: 22px; text-align: center; font-size: 1.05rem;
+  display: inline-block;
+}
+.tab[data-aba="dia"]::before { content: "\f073"; }
+.tab[data-aba="encaixes"]::before { content: "\f0fe"; }
+.tab[data-aba="checkin"]::before { content: "\f029"; }
+.tab[data-aba="horarios"]::before { content: "\f017"; }
+.tab[data-aba="relatorios"]::before { content: "\f1c3"; }
+.tab[data-aba="qr"]::before { content: "\f02a"; }
+@media (max-width: 899px) {
+  #tela-app .tabs { position: sticky; top: 74px; z-index: 40; }
+  #tela-app .tab { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .82rem; }
+}
+
+/* ---------- Cartões e títulos de seção (barra verde como no gate) ---------- */
+.card { border-radius: 14px; border-color: transparent; box-shadow: 0 4px 14px rgba(0,0,0,.05); padding: 18px 20px; }
+.card > h2:first-child {
+  margin: -18px -20px 16px; padding: 14px 20px; border-radius: 14px 14px 0 0;
+  background: var(--pt-verde-esc); color: #fff; font-family: var(--font-texto); font-weight: 700; font-size: 1.1rem;
+}
+.cartaz > h2:first-child { margin: 0 0 4px; padding: 0; background: none; color: var(--text); font-size: 1.5rem; }
+#d-titulo { font-family: var(--font-texto); font-weight: 700; color: var(--pt-verde); font-size: 1.15rem !important; margin: 4px 0 8px !important; }
+@media (prefers-color-scheme: dark) { #d-titulo { color: var(--primary); } }
+
+/* ---------- Indicadores ---------- */
+.kpis { gap: 14px; margin: 8px 0 18px; }
+.kpi {
+  display: grid; grid-template-columns: 52px 1fr; grid-template-rows: auto auto; column-gap: 14px; align-items: center;
+  background: var(--card); border: 0; border-radius: 14px; padding: 16px 18px; box-shadow: 0 4px 14px rgba(0,0,0,.05);
+  position: relative; overflow: hidden;
+}
+.kpi::before {
+  grid-row: 1 / span 2; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  font-family: "Font Awesome 6 Free"; font-weight: 900; font-size: 1.25rem; color: #fff; background: #3aa655; content: "\f0c0";
+}
+.kpi::after { content: ""; position: absolute; left: 18px; right: 18px; bottom: 10px; height: 5px; border-radius: 5px; background: currentColor; opacity: .0; }
+.kpi b { font-family: var(--font-texto); font-size: 2rem; font-weight: 800; line-height: 1; color: var(--text); }
+.kpi span { font-size: .92rem; color: var(--muted); }
+.kpi:nth-child(2)::before { background: #f39c12; content: "\f017"; }
+.kpi:nth-child(3)::before { background: #1f9d55; content: "\f00c"; }
+.kpi:nth-child(4)::before { background: #d64541; content: "\f071"; }
+@media (max-width: 600px) { .kpi { grid-template-columns: 40px 1fr; padding: 12px; } .kpi::before { width: 40px; height: 40px; font-size: 1rem; } .kpi b { font-size: 1.5rem; } }
+
+/* ---------- Agenda do dia ---------- */
+.bloco-hora { background: var(--card); border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.05); overflow: hidden; margin-bottom: 16px; }
+.bloco-hora > header {
+  background: var(--pt-verde-esc); color: #fff; border: 0; margin: 0; padding: 12px 18px;
+}
+.bloco-hora > header b { font-size: 1.05rem; }
+.bloco-hora > header b::before { font-family: "Font Awesome 6 Free"; font-weight: 400; content: "\f017"; margin-right: 8px; }
+.bloco-hora > header .muted { color: #cfe8d6; font-weight: 600; background: rgba(255,255,255,.12); padding: 4px 12px; border-radius: 999px; }
+.bloco-hora > p.muted { padding: 12px 18px; margin: 0; }
+.bloco-hora .agend { border: 0; border-top: 1px solid var(--border); border-radius: 0; margin: 0; padding: 14px 18px; }
+.bloco-hora .agend:first-of-type { border-top: 0; }
+.bloco-hora .agend:hover { background: color-mix(in srgb, var(--primary-soft) 45%, var(--card)); }
+.agend-nome { font-size: 1.05rem; }
+.placas { display: inline-block; background: var(--gray-soft); padding: 3px 10px; border-radius: 8px; letter-spacing: .5px; }
+.doc { border-radius: 999px; padding: 3px 10px; font-weight: 600; }
+select.sel-status { border-radius: 999px; padding: 7px 12px; border: 0; }
+.chegou { border-radius: 999px; padding: 5px 12px; }
+
+/* ---------- Botões e campos ---------- */
+button, .btn { border-radius: 10px; font-weight: 700; }
+.btn-primario { background: var(--pt-verde); border-color: var(--pt-verde); }
+.btn-primario:hover { background: var(--pt-verde-esc); }
+@media (prefers-color-scheme: dark) { .btn-primario { background: var(--primary); border-color: var(--primary); color: #0f1712; } }
+input, select, textarea { border-radius: 10px; }
+
+/* ---------- Tabelas (horários cadastrados) ---------- */
+table.lista th { background: var(--gray-soft); color: var(--text); font-weight: 700; font-size: .85rem; padding: 10px; }
+table.lista td { padding: 10px; }
+table.lista tr:hover td { background: color-mix(in srgb, var(--primary-soft) 40%, var(--card)); }
+.badge { background: #d64541; color: #fff; border-radius: 999px; padding: 1px 8px; font-size: .78rem; font-weight: 800; }
+
+/* ---------- Tela de login ---------- */
+#tela-login { margin-top: 40px; }
+
+@media print {
+  body { padding-left: 0 !important; background: #fff; }
+  body::before, .pt-lado { display: none !important; }
+  .bloco-hora > header { background: none; color: #000; border-bottom: 2px solid #000; }
+  .bloco-hora, .card, .kpi { box-shadow: none; }
+}
+
+/* Ajustes finos */
+.bloco-hora > header b { color: #fff !important; }
+@media (min-width: 900px) { #tela-app .tab { justify-content: flex-start; } }
+@media (max-width: 899px) {
+  header.topo { position: static; padding: 12px 16px; }
+  header.topo h1 { font-size: 1.15rem; }
+  header.topo .marca::before { height: 36px; }
+  #tela-app .tabs { top: 0; }
+}
