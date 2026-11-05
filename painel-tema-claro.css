@@ -1,0 +1,85 @@
+/* =====================================================================
+   Tema CLARO do painel (admin.html) — mesmo layout do escuro.
+   Ativado por <html data-tema="claro">. O menu lateral e o topo continuam verdes.
+   ===================================================================== */
+.btn-tema {
+  display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin-right: 8px;
+  min-height: 38px; padding: 7px 14px; border-radius: 999px; font: 700 .9rem "Ubuntu", sans-serif;
+  background: rgba(0,0,0,.35) !important; color: #fff !important; border: 1px solid rgba(255,255,255,.35) !important; box-shadow: none !important;
+}
+.btn-tema:hover { background: rgba(0,0,0,.5) !important; }
+header.topo .wrap > span:has(.btn-tema) { margin-left: auto; }
+
+html[data-tema="claro"] {
+  color-scheme: light;
+  --bg: #eef5f0; --card: #ffffff; --text: #1f2a24; --muted: #55665b;
+  --border: rgba(15,95,51,.18); --border-forte: rgba(15,95,51,.35);
+  --primary: #15803d; --primary-hover: #166534; --primary-ink: #ffffff; --primary-soft: #e3f6e8;
+  --accent: #16a34a; --accent-text: #15803d; --accent-soft: #e8f5ec;
+  --ok: #15803d; --ok-soft: #dcfce7; --warn: #a16207; --warn-soft: #fef3c7; --danger: #b91c1c; --danger-soft: #fee2e2;
+  --gray-soft: #eef3ef; --vidro: rgba(255,255,255,.95);
+}
+html[data-tema="claro"] body {
+  color: var(--text);
+  background:
+    radial-gradient(1000px 500px at 10% 40%, rgba(34,197,94,.14), transparent 60%),
+    radial-gradient(900px 500px at 100% 90%, rgba(34,197,94,.08), transparent 60%),
+    linear-gradient(180deg, #f3f8f4 0%, #e8f1eb 100%);
+}
+html[data-tema="claro"] a { color: #15803d; }
+
+/* Cartões, indicadores e blocos */
+html[data-tema="claro"] .card, html[data-tema="claro"] .kpi, html[data-tema="claro"] .bloco-hora {
+  background: var(--vidro); border-color: rgba(15,95,51,.14); box-shadow: 0 8px 26px rgba(15,60,30,.09);
+}
+html[data-tema="claro"] .cartaz > h2:first-child { color: #14532d; }
+html[data-tema="claro"] #d-titulo, html[data-tema="claro"] #pe-titulo { color: #15803d !important; }
+html[data-tema="claro"] .kpi b { color: #14532d; }
+html[data-tema="claro"] .kpi span { color: var(--muted); }
+html[data-tema="claro"] .bloco-hora .agend { background: #fff; border-top-color: #e3ece6; }
+html[data-tema="claro"] .bloco-hora .agend:hover, html[data-tema="claro"] table.lista tr:hover td { background: #f1f8f3; }
+html[data-tema="claro"] .agend { background: #fff; border-color: #dbe7df; }
+html[data-tema="claro"] .agend-nome, html[data-tema="claro"] .pe-tabela b { color: #14532d; }
+html[data-tema="claro"] .placas { background: #eef3ef; color: #1f2a24; }
+html[data-tema="claro"] .pe-tabela td { border-top-color: #e3ece6; }
+html[data-tema="claro"] .pe-rodape { background: #f6faf7; border-top-color: #e3ece6; }
+html[data-tema="claro"] .chip-monitor { background: #f3e8ff; color: #6b21a8; }
+html[data-tema="claro"] .chip-motorista { background: #dcfce7; color: #166534; }
+html[data-tema="claro"] .chegou { background: #dcfce7; color: #166534; }
+
+/* Campos, tabelas e botões */
+html[data-tema="claro"] input, html[data-tema="claro"] select, html[data-tema="claro"] textarea { background: #fff; border: 1px solid #c9d8ce; color: #1f2a24; }
+html[data-tema="claro"] input::placeholder, html[data-tema="claro"] textarea::placeholder { color: #8a9a90; }
+html[data-tema="claro"] select option { background: #fff; color: #1f2a24; }
+html[data-tema="claro"] table.lista th { background: #eef5f0; color: #14532d; }
+html[data-tema="claro"] table.lista td { border-bottom-color: #e3ece6; }
+html[data-tema="claro"] button, html[data-tema="claro"] .btn { background: #fff; color: #1f2a24; border: 1px solid #c9d8ce; }
+html[data-tema="claro"] button:hover:not(:disabled), html[data-tema="claro"] .btn:hover { background: #eef5f0; }
+html[data-tema="claro"] .btn-primario { background: linear-gradient(180deg, #22c55e, #15803d) !important; color: #fff !important; border-color: transparent !important; box-shadow: 0 6px 16px rgba(21,128,61,.28); }
+html[data-tema="claro"] .btn-perigo { background: #fff; color: #b91c1c; border-color: #b91c1c; }
+html[data-tema="claro"] .btn-lixo { background: #fff; }
+html[data-tema="claro"] .dias-semana label { background: #fff; border-color: #c9d8ce; color: #1f2a24; }
+html[data-tema="claro"] .ci-ok { background: #dcfce7; color: #166534; }
+html[data-tema="claro"] .ci-alerta { background: #fef3c7; color: #92400e; }
+html[data-tema="claro"] .ci-erro { background: #fee2e2; color: #991b1b; }
+html[data-tema="claro"] header.topo button:not(.btn-tema) { background: rgba(0,0,0,.35); color: #fff; border-color: rgba(255,255,255,.35); }
+
+/* Menu e abas: o menu lateral continua verde; no celular as abas ficam claras */
+@media (max-width: 899px) {
+  html[data-tema="claro"] #tela-app .tabs { background: rgba(255,255,255,.95); border-color: rgba(15,95,51,.16); }
+  html[data-tema="claro"] #tela-app .tab { color: #2a3a30; }
+  html[data-tema="claro"] #tela-app .tab[aria-selected="true"] { color: #fff; background: linear-gradient(180deg, #22c55e, #15803d); }
+}
+@media (min-width: 900px) {
+  html[data-tema="claro"] #tela-app .tab[aria-selected="true"] { color: #fff; background: linear-gradient(180deg, #22c55e, #15803d); }
+}
+@media print { .btn-tema { display: none !important; } }
+html[data-tema="claro"] #tela-app .tab { border: 0; background: transparent; }
+@media (min-width: 900px) {
+  html[data-tema="claro"] #tela-app .tab:not([aria-selected="true"]) { color: #d7e9dd; }
+  html[data-tema="claro"] #tela-app .tab:not([aria-selected="true"]):hover { background: rgba(255,255,255,.1); color: #fff; }
+}
+@media (max-width: 520px) {
+  .btn-tema { font-size: 0 !important; gap: 0; padding: 6px 9px; min-width: 36px; justify-content: center; }
+  .btn-tema span { font-size: 16px; }
+}
