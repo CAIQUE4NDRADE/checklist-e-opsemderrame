@@ -35,7 +35,7 @@ header.topo button:hover { background: var(--gray-soft); }
     display: block; position: fixed; z-index: 60; top: 0; left: 0; width: var(--pt-lado);
     padding: 28px 16px 20px; text-align: center; color: #fff;
   }
-  .pt-logo { font-size: 2.3rem; font-weight: 800; letter-spacing: -1px; text-transform: lowercase; line-height: 1; }
+  .pt-logo { font-size: 2.3rem; font-weight: 800; letter-spacing: -1px; line-height: 1; }
   .pt-versao { font-size: .9rem; font-weight: 700; margin-top: 8px; opacity: .95; }
   body:has(#tela-app:not(.oculto))::before {
     content: ""; position: fixed; inset: 0 auto 0 0; width: var(--pt-lado); z-index: 55;

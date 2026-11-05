@@ -142,7 +142,7 @@
       ["r-tel", cfg.TELEFONE_PORTARIA ? "Portaria:" : "", cfg.TELEFONE_PORTARIA ? tel(cfg.TELEFONE_PORTARIA) : ""],
       ["r-gate", cfg.WHATSAPP_PORTARIA ? "Gate da portaria (WhatsApp):" : "", cfg.WHATSAPP_PORTARIA ? zap(cfg.WHATSAPP_PORTARIA) : ""],
       ["r-horario", cfg.HORARIO_ATENDIMENTO ? "Atendimento:" : "", esc(cfg.HORARIO_ATENDIMENTO || "")],
-      ["r-marca", `<span class="r-logo">raízen</span>`, `<a href="privacidade.html">Política de privacidade</a>`],
+      ["r-marca", `<span class="r-logo">Raízen</span>`, `<a href="privacidade.html">Política de privacidade</a>`],
     ].filter(([, t]) => t);
     rodape.innerHTML = colunas.map(([c, t, v]) =>
       `<div class="${c}"><span class="r-titulo">${t}</span>${v ? `<span class="r-valor">${v}</span>` : ""}</div>`).join("");

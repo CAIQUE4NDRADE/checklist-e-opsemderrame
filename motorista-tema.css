@@ -33,7 +33,7 @@ header.topo {
 }
 header.topo .wrap-estreito { max-width: 1100px; }
 .marca-topo { align-items: center !important; gap: 18px !important; position: relative; z-index: 1; }
-.pt-wordmark { font-family: var(--font-texto); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; text-transform: lowercase; }
+.pt-wordmark { font-family: var(--font-texto); font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
 .pt-sep { width: 2px; align-self: stretch; min-height: 56px; background: linear-gradient(180deg, transparent, var(--pt-brilho), transparent); }
 .marca-topo img { width: 56px !important; height: 56px !important; background: rgba(255,255,255,.08); border: 2px solid rgba(255,255,255,.8); padding: 6px; border-radius: 14px; box-shadow: none; margin-top: 0 !important; }
 header.topo h1 { font-family: var(--font-texto); font-weight: 800; letter-spacing: 0; color: #fff; }
