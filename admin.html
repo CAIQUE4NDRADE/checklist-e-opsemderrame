@@ -46,6 +46,7 @@
     <div id="tela-app" class="oculto">
       <div class="tabs" role="tablist">
         <button class="tab" role="tab" aria-selected="true" data-aba="dia">Agenda do dia</button>
+        <button class="tab" role="tab" aria-selected="false" data-aba="pe">Entrada a pé</button>
         <button class="tab" role="tab" aria-selected="false" data-aba="encaixes">Encaixes <span class="badge oculto" id="badge-encaixes">0</span></button>
         <button class="tab" role="tab" aria-selected="false" data-aba="checkin">Check-in</button>
         <button class="tab" role="tab" aria-selected="false" data-aba="horarios">Horários</button>
@@ -88,6 +89,33 @@
         <h2 id="d-titulo" style="font-size:1.1rem;margin:4px 0"></h2>
         <div class="kpis" id="d-kpis"></div>
         <div id="d-lista"></div>
+      </section>
+
+      <!-- ----- Entrada a pé ----- -->
+      <section id="aba-pe" class="oculto">
+        <div class="card nao-imprimir">
+          <div class="barra">
+            <div>
+              <label for="pe-data">Data</label>
+              <input id="pe-data" type="date">
+            </div>
+            <div style="flex:2 1 220px">
+              <label for="pe-busca">Buscar</label>
+              <input id="pe-busca" placeholder="Código, transportadora, nome ou CPF">
+            </div>
+            <div style="flex:0 0 auto;display:flex;gap:8px">
+              <button id="pe-hoje">Hoje</button>
+              <button id="pe-atualizar">Atualizar</button>
+              <button id="pe-imprimir">Imprimir</button>
+            </div>
+          </div>
+          <label style="display:flex;gap:8px;align-items:center;font-weight:500">
+            <input type="checkbox" id="pe-mostrar-cancelados" style="width:auto"> Mostrar cancelados
+          </label>
+        </div>
+        <h2 id="pe-titulo" style="font-size:1.1rem;margin:4px 0"></h2>
+        <div class="kpis" id="pe-kpis"></div>
+        <div id="pe-lista"></div>
       </section>
 
       <!-- ----- Encaixes ----- -->
@@ -251,6 +279,7 @@
             <option value="">Checklist e curso (o motorista escolhe)</option>
             <option value="curso">Só o Curso Operação Sem Derrame</option>
             <option value="checklist">Só o checklist do caminhão</option>
+            <option value="entrada">Só a entrada a pé (transportadoras)</option>
           </select>
         </div>
         <div class="card cartaz">
@@ -273,5 +302,6 @@
   <script src="config.js"></script>
   <script src="common.js"></script>
   <script src="admin.js"></script>
+  <script src="entrada-pe-admin.js"></script>
 </body>
 </html>

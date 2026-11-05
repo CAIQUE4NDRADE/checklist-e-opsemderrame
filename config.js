@@ -51,6 +51,15 @@ window.APP_CONFIG = {
     "Se não puder vir, cancele pelo site para liberar a vaga.",
   ],
 
+  // ---------- Entrada a pé (monitor e motoristas da transportadora) ----------
+  ORIENTACOES_ENTRADA_PE: [
+    "A entrada a pé é de segunda a sexta, das 08:00 às 17:00.",
+    "Cada pessoa da lista apresenta documento com foto (RG ou CNH) e o código de confirmação na portaria.",
+    "Use EPI completo: botina, calça, capacete e óculos.",
+    "Só entram as pessoas que estão no agendamento. Para incluir alguém, faça um novo agendamento.",
+    "Se a equipe não puder vir, cancele pelo site em Meu agendamento.",
+  ],
+
   // Sugestões para o campo "Companhia"
   COMPANHIAS: ["RAÍZEN", "FOB", "CIF"],
 };

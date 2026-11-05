@@ -1,8 +1,9 @@
 // Service worker simples: permite instalar como app.
 // Sempre busca da rede primeiro (dados atualizados); usa cache só se estiver sem internet.
-const CACHE = "agenda-bpa-v5";
+const CACHE = "agenda-bpa-v6";
 const ARQUIVOS = ["./", "index.html", "styles.css", "config.js", "common.js", "agendar.js",
-                  "privacidade.html", "icon.svg", "icon-192.png"];
+                  "privacidade.html", "icon.svg", "icon-192.png",
+                  "entrada-pe.js", "motorista-tema.css"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)).catch(() => {}));

@@ -79,7 +79,7 @@
   document.querySelectorAll(".tab").forEach((t) =>
     t.addEventListener("click", () => {
       document.querySelectorAll(".tab").forEach((x) => x.setAttribute("aria-selected", x === t));
-      ["dia", "encaixes", "checkin", "horarios", "relatorios", "qr"].forEach((a) =>
+      ["dia", "pe", "encaixes", "checkin", "horarios", "relatorios", "qr"].forEach((a) =>
         $("aba-" + a).classList.toggle("oculto", t.dataset.aba !== a));
       if (t.dataset.aba !== "checkin") pararCamera();
       if (t.dataset.aba === "checkin") setTimeout(() => $("ci-codigo").focus(), 50);
@@ -87,6 +87,7 @@
       if (t.dataset.aba === "encaixes") carregarEncaixes();
       if (t.dataset.aba === "qr") montarQR();
       if (t.dataset.aba === "dia") carregarDia();
+      if (t.dataset.aba === "pe") window.EntradaPeAdmin?.carregar();
     })
   );
 
@@ -412,7 +413,8 @@
   function montarQR() {
     const alvo = $("qr-alvo").value;
     $("qr-titulo").textContent = alvo === "curso" ? "Inscreva-se no Curso Operação Sem Derrame"
-      : alvo === "checklist" ? "Agende seu checklist" : "Agende seu checklist ou curso";
+      : alvo === "checklist" ? "Agende seu checklist"
+      : alvo === "entrada" ? "Transportadora: agende a entrada a pé" : "Agende seu checklist ou curso";
     const url = urlMotorista();
     $("qr-url").textContent = url;
     $("qr-abrir").href = url;
@@ -643,7 +645,11 @@
       .order("created_at", { ascending: false })
       .limit(1);
     if (error) { $("ci-erro").textContent = msgErro(error); return; }
-    if (!data.length) { $("ci-erro").textContent = `Nenhum agendamento com o código ${cod}.`; return; }
+    if (!data.length) {
+      if (window.EntradaPeAdmin && await window.EntradaPeAdmin.checkin(cod)) return;   // código de entrada a pé
+      $("ci-erro").textContent = `Nenhum agendamento com o código ${cod}.`;
+      return;
+    }
 
     const a = data[0];
     const h = a.horarios;

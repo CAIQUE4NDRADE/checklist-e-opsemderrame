@@ -62,6 +62,10 @@
             <b data-nome-curso>Curso Operação Sem Derrame</b>
             <small>Informe nome, CPF e transportadora. Turma toda terça-feira.</small>
           </button>
+          <button type="button" class="tipo-opcao" data-tipo="entrada_pe">
+            <b>Entrada a pé</b>
+            <small>Para a transportadora agendar o monitor e os motoristas. Segunda a sexta, das 08:00 às 17:00.</small>
+          </button>
         </div>
       </div>
 
@@ -195,6 +199,71 @@
         <button class="btn-bloco" id="btn-encaixe-novo">Voltar ao início</button>
       </div>
 
+      <!-- Entrada a pé: pedido da transportadora -->
+      <form class="card oculto" id="passo-pe" novalidate>
+        <div class="tipo-atual">
+          <span class="chip chip-pe">Entrada a pé · Monitor e motoristas</span>
+          <button type="button" class="btn-peq" id="pe-trocar">Trocar</button>
+        </div>
+        <h2>Agendar entrada a pé</h2>
+        <p class="muted" style="margin-top:-6px">De segunda a sexta. No dia agendado, a entrada pode ser feita a qualquer hora
+          entre <b>08:00 e 17:00</b>.</p>
+
+        <h3>1. Escolha o dia</h3>
+        <div class="dias" id="pe-dias"></div>
+
+        <h3>2. Transportadora</h3>
+        <label for="pe-transportadora">Transportadora</label>
+        <input id="pe-transportadora" autocomplete="organization">
+        <div class="grid2">
+          <div>
+            <label for="pe-responsavel">Responsável pelo agendamento</label>
+            <input id="pe-responsavel" autocomplete="name">
+          </div>
+          <div>
+            <label for="pe-telefone">Telefone (com DDD)</label>
+            <input id="pe-telefone" inputmode="tel" autocomplete="tel" placeholder="(19) 99999-9999">
+          </div>
+        </div>
+
+        <h3>3. Quem vai entrar <span class="muted" id="pe-contagem"></span></h3>
+        <div id="pe-pessoas"></div>
+        <div class="acoes">
+          <button type="button" id="pe-add-motorista">+ Adicionar motorista</button>
+          <button type="button" id="pe-add-monitor">+ Adicionar monitor</button>
+        </div>
+
+        <label class="check" for="pe-consentimento">
+          <input type="checkbox" id="pe-consentimento">
+          <span>Autorizo o uso dos dados destas pessoas para este agendamento e para o controle de acesso ao terminal,
+            conforme a <a href="privacidade.html" target="_blank" rel="noopener">política de privacidade</a>.</span>
+        </label>
+        <label class="check" for="pe-lembrar">
+          <input type="checkbox" id="pe-lembrar" checked>
+          <span>Lembrar a transportadora e a lista neste aparelho para o próximo agendamento</span>
+        </label>
+        <p class="erro" id="pe-erro" role="alert"></p>
+        <button type="submit" class="btn-primario btn-bloco" id="pe-enviar">Confirmar agendamento</button>
+      </form>
+
+      <!-- Entrada a pé: confirmação -->
+      <div class="card confirmacao oculto" id="passo-pe-ok">
+        <h2>Entrada a pé agendada!</h2>
+        <div class="resumo" id="peok-resumo"></div>
+        <p class="muted" style="margin-bottom:0">Código de confirmação:</p>
+        <div class="codigo" id="peok-codigo"></div>
+        <div class="qr-box" id="peok-qr"></div>
+        <ul class="pe-lista-ok" id="peok-pessoas"></ul>
+        <p class="muted">Envie o código para cada pessoa da lista. Na portaria, cada um apresenta <b>documento com foto</b>
+          e este código.<br>Para consultar ou cancelar, use a aba <b>Meu agendamento</b> com o código e o CPF de qualquer pessoa da lista.</p>
+        <div class="acoes acoes-centro">
+          <a class="btn" id="peok-whats" target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
+          <a class="btn" id="peok-maps" target="_blank" rel="noopener">📍 Como chegar</a>
+        </div>
+        <div class="instrucoes-dia" id="peok-orientacao"></div>
+        <button class="btn-bloco" id="peok-novo">Fazer outro agendamento</button>
+      </div>
+
       <!-- Passo 3: confirmação -->
       <div class="card confirmacao oculto" id="passo-ok">
         <h2>Agendamento realizado com sucesso!</h2>
@@ -217,7 +286,7 @@
     <section id="aba-consultar" class="oculto">
       <form class="card" id="form-consulta" novalidate>
         <h2>Consultar ou cancelar</h2>
-        <label for="c-cpf">Placa do caminhão (checklist) ou CPF (curso)</label>
+        <label for="c-cpf">Placa do caminhão (checklist) ou CPF (curso e entrada a pé)</label>
         <input id="c-cpf" autocapitalize="characters" placeholder="ABC1D23 ou 000.000.000-00">
         <label for="c-codigo">Código de confirmação</label>
         <input id="c-codigo" autocapitalize="characters" maxlength="6" placeholder="Ex.: A1B2C3"
@@ -239,6 +308,10 @@
         <h2 data-nome-curso>Curso Operação Sem Derrame</h2>
         <ol class="orientacoes" id="ori-curso"></ol>
       </div>
+      <div class="card">
+        <h2>Entrada a pé</h2>
+        <ol class="orientacoes" id="ori-pe"></ol>
+      </div>
     </section>
   </main>
 
@@ -251,5 +324,6 @@
   <script src="config.js"></script>
   <script src="common.js"></script>
   <script src="agendar.js"></script>
+  <script src="entrada-pe.js"></script>
 </body>
 </html>

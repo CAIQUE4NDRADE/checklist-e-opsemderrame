@@ -25,19 +25,22 @@
   preencherLista("ori-checklist", cfg.ORIENTACOES_CHECKLIST);
   preencherLista("ori-curso", cfg.ORIENTACOES_CURSO);
 
-  const PASSOS = ["passo-tipo", "passo-horario", "passo-dados", "passo-ok", "passo-encaixe", "passo-encaixe-ok"];
-  const ETAPA_DO_PASSO = { "passo-tipo": 0, "passo-horario": 1, "passo-dados": 2, "passo-encaixe": 2, "passo-ok": 3, "passo-encaixe-ok": 3 };
+  const PASSOS = ["passo-tipo", "passo-horario", "passo-dados", "passo-ok", "passo-encaixe", "passo-encaixe-ok",
+                  "passo-pe", "passo-pe-ok"];
+  const ETAPA_DO_PASSO = { "passo-tipo": 0, "passo-horario": 1, "passo-dados": 2, "passo-encaixe": 2, "passo-ok": 3, "passo-encaixe-ok": 3,
+                           "passo-pe": 2, "passo-pe-ok": 3 };
   const mostrarPasso = (id) => {
     PASSOS.forEach((p) => $(p).classList.toggle("oculto", p !== id));
     const atual = ETAPA_DO_PASSO[id] ?? 0;
-    const fim = id === "passo-ok" || id === "passo-encaixe-ok";
+    const fim = id === "passo-ok" || id === "passo-encaixe-ok" || id === "passo-pe-ok";
     document.querySelectorAll("#etapas li").forEach((li, i) => {
       li.classList.toggle("feita", i < atual || fim);
       li.classList.toggle("atual", i === atual && !fim);
       li.toggleAttribute("aria-current", i === atual);
     });
     // Versão compacta para celular: "Passo 2 de 4 · Data e horário"
-    const nomes = ["Serviço", "Data e horário", id === "passo-encaixe" ? "Pedido de encaixe" : "Seus dados",
+    const nomes = ["Serviço", "Data e horário",
+                   id === "passo-encaixe" ? "Pedido de encaixe" : id === "passo-pe" ? "Dia e pessoas" : "Seus dados",
                    id === "passo-encaixe-ok" ? "Pedido enviado" : "Confirmação"];
     const n = atual + 1;
     $("etapa-num").textContent = fim ? "Concluído" : `Passo ${n} de 4`;
@@ -60,6 +63,7 @@
     b.addEventListener("click", () => escolherTipo(b.dataset.tipo)));
 
   function escolherTipo(t) {
+    if (t === "entrada_pe") { window.EntradaPe?.abrir(); return; }   // fluxo próprio (entrada-pe.js)
     tipo = t;
     const curso = t === "curso_osd";
     $("chip-tipo").textContent = NOME_TIPO[t];
@@ -400,6 +404,7 @@
         const { data: enc } = await sb.rpc("consultar_encaixe", { p_placa: cpf, p_codigo: codigo });
         if (enc && enc.length) { mostrarEncaixe(enc[0]); return; }
       }
+      if (cpf.length === 11 && window.EntradaPe && await window.EntradaPe.consultar(cpf, codigo)) return;
       erro.textContent = "Agendamento não encontrado. Confira a placa (ou CPF) e o código.";
       return;
     }
@@ -447,6 +452,9 @@
       ${e.resposta ? `<p class="aviso"><b>Mensagem da equipe:</b> ${esc(e.resposta)}</p>` : ""}`;
     res.classList.remove("oculto");
   }
+
+  // Usado pelo entrada-pe.js
+  window.AgendaMotorista = { mostrarPasso };
 
   // ---------- Início ----------
   carregarLembrados();

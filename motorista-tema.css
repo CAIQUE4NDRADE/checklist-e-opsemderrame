@@ -38,8 +38,9 @@ main.wrap-estreito { padding-top: 18px; }
   padding: 15px clamp(18px, 3vw, 24px); border-radius: 16px 16px 0 0;
   background: var(--pt-verde-esc); color: #fff; font-family: var(--font-texto); font-weight: 700; font-size: 1.15rem;
 }
-.confirmacao > h2:first-child { background: #1f9d55; }
-.confirmacao-encaixe > h2:first-child { background: #b45309; }
+.confirmacao > h2:first-child { margin: 6px 0 12px; padding: 0; background: none; border-radius: 0; color: #157a3c; font-size: 1.3rem; }
+.confirmacao-encaixe > h2:first-child { color: #b45309; }
+@media (prefers-color-scheme: dark) { .confirmacao > h2:first-child { color: var(--ok); } }
 
 /* ---------- Etapas ---------- */
 .etapas li::before { border-color: #cfd8d2; }
@@ -86,3 +87,31 @@ button, .btn { border-radius: 12px; font-weight: 700; }
 .rodape { background: var(--card); }
 
 @media print { header.topo { background: none; color: #000; } }
+
+/* ---------- Entrada a pé ---------- */
+.tipos { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.tipo-opcao[data-tipo="entrada_pe"]::before { content: "\f554"; background: #7b3fbf; }
+.tipo-opcao[data-tipo="entrada_pe"] { border-left: 1px solid var(--border); }
+.chip-pe { background: #efe6fa; color: #5b2a99; }
+@media (prefers-color-scheme: dark) { .chip-pe { background: #33244a; color: #d9c4f5; } }
+#passo-pe h3 { color: var(--pt-verde); }
+@media (prefers-color-scheme: dark) { #passo-pe h3 { color: var(--primary); } }
+.pe-pessoa {
+  display: grid; grid-template-columns: 150px 1fr 190px; gap: 0 10px; align-items: end;
+  border: 1px solid var(--border); border-left: 4px solid var(--pt-lima); border-radius: 12px;
+  padding: 10px 12px 12px; margin-bottom: 10px; background: var(--card);
+}
+.pe-pessoa label { margin-top: 0; }
+.pe-pessoa-topo { display: flex; gap: 8px; align-items: center; }
+.pe-pessoa-topo select { font-weight: 700; }
+.pe-remover { color: var(--danger); border-color: transparent; background: transparent; white-space: nowrap; }
+.pe-pessoa:first-child:last-child .pe-remover { visibility: hidden; }
+@media (max-width: 620px) {
+  .pe-pessoa { grid-template-columns: 1fr; gap: 8px; }
+  .pe-pessoa-topo select { flex: 1; }
+}
+.pe-lista-ok { list-style: none; padding: 0; margin: 14px auto; max-width: 420px; text-align: left; display: grid; gap: 6px; }
+.pe-lista-ok li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--gray-soft); font-weight: 600; }
+.pe-lista-ok .chip { flex: 0 0 auto; }
+.pe-lista-ok .chegou { margin-left: auto; }
+@media (max-width: 480px) { #passo-pe .grid2 { grid-template-columns: 1fr; } }

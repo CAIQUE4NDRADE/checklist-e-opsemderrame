@@ -129,6 +129,7 @@ flowchart LR
 
 1. Crie um projeto no [Supabase](https://supabase.com) e rode o `schema.sql` no **SQL Editor**.
 2. Em **Authentication**, desative o cadastro aberto, crie o usuário operador e rode o `2_operador.sql`.
+   Para a entrada a pé, rode também o `4_entrada_pe.sql`.
 3. Preencha a URL e a chave **publishable** no `config.js`.
 4. Publique os arquivos no **GitHub Pages** (branch `main`, pasta raiz).
 5. No painel, gere os horários e imprima o cartaz com o QR code.
@@ -152,6 +153,10 @@ manifest.webmanifest, sw.js, icon*   # 📲 PWA
 schema.sql                # 🗄️ banco, regras e funções
 2_operador.sql            # 👤 primeiro operador
 3_limpeza_automatica.sql  # 🧹 limpeza LGPD agendada
+4_entrada_pe.sql          # 🚶 entrada a pé (monitor e motoristas da transportadora)
+entrada-pe.js             # 🚶 agendamento da entrada a pé (site)
+entrada-pe-admin.js       # 🚶 entrada a pé no painel (lista do dia e check-in)
+painel-tema.css, motorista-tema.css  # 🎨 tema verde do painel e do site
 ```
 
 ---
