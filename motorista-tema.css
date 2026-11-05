@@ -116,3 +116,11 @@ button, .btn { border-radius: 12px; font-weight: 700; }
 .pe-lista-ok .chip { flex: 0 0 auto; }
 .pe-lista-ok .chegou { margin-left: auto; }
 @media (max-width: 480px) { #passo-pe .grid2 { grid-template-columns: 1fr; } }
+
+/* ---------- Voltar passos ---------- */
+.etapas li.clicavel { cursor: pointer; }
+.etapas li.clicavel:hover { background: var(--gray-soft); color: var(--pt-verde); }
+.etapas li.clicavel:hover::before { filter: brightness(.95); }
+.etapa-compacta-texto { display: flex; align-items: center; gap: 10px; }
+.etapa-voltar { padding: 6px 12px; font-size: .9rem; border-radius: 999px; background: var(--card); color: var(--pt-verde); border: 1px solid var(--border); }
+@media (prefers-color-scheme: dark) { .etapa-voltar { color: var(--primary); } }

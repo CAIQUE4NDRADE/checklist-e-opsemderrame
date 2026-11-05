@@ -29,15 +29,34 @@
                   "passo-pe", "passo-pe-ok"];
   const ETAPA_DO_PASSO = { "passo-tipo": 0, "passo-horario": 1, "passo-dados": 2, "passo-encaixe": 2, "passo-ok": 3, "passo-encaixe-ok": 3,
                            "passo-pe": 2, "passo-pe-ok": 3 };
-  const mostrarPasso = (id) => {
+  const FIM = new Set(["passo-ok", "passo-encaixe-ok", "passo-pe-ok"]);
+  let passoAtual = "passo-tipo";
+  // Para onde vai quem clica num passo já feito (ou aperta Voltar)
+  const destinoEtapa = (i) => i === 0 ? "passo-tipo"
+    : i === 1 ? (passoAtual.startsWith("passo-pe") ? "passo-pe" : "passo-horario") : null;
+  const ANTERIOR = { "passo-horario": "passo-tipo", "passo-dados": "passo-horario",
+                     "passo-encaixe": "passo-horario", "passo-pe": "passo-tipo" };
+
+  const mostrarPasso = (id, opcoes = {}) => {
+    const mudou = id !== passoAtual;
+    passoAtual = id;
     PASSOS.forEach((p) => $(p).classList.toggle("oculto", p !== id));
     const atual = ETAPA_DO_PASSO[id] ?? 0;
-    const fim = id === "passo-ok" || id === "passo-encaixe-ok" || id === "passo-pe-ok";
+    const fim = FIM.has(id);
     document.querySelectorAll("#etapas li").forEach((li, i) => {
       li.classList.toggle("feita", i < atual || fim);
       li.classList.toggle("atual", i === atual && !fim);
       li.toggleAttribute("aria-current", i === atual);
+      // Passos já feitos ficam clicáveis; depois de concluir, só dá para começar de novo
+      const clicavel = fim ? i === 0 : i < atual && !!destinoEtapa(i);
+      li.classList.toggle("clicavel", clicavel);
+      if (clicavel) {
+        li.setAttribute("role", "button"); li.tabIndex = 0;
+        li.title = fim ? "Fazer outro agendamento" : "Voltar para este passo";
+      } else { li.removeAttribute("role"); li.removeAttribute("tabindex"); li.removeAttribute("title"); }
     });
+    $("etapa-voltar").classList.toggle("oculto", !ANTERIOR[id]);
+    if (mudou && !opcoes.semHistorico) history.pushState({ passo: id }, "");
     // Versão compacta para celular: "Passo 2 de 4 · Data e horário"
     const nomes = ["Serviço", "Data e horário",
                    id === "passo-encaixe" ? "Pedido de encaixe" : id === "passo-pe" ? "Dia e pessoas" : "Seus dados",
@@ -179,6 +198,33 @@
   $("btn-trocar-horario").addEventListener("click", () => {
     mostrarPasso("passo-horario");
     carregarSlots();
+  });
+
+  // ---------- Voltar passos ----------
+  function irPara(id, opcoes) {
+    if (!id) return;
+    if (id === "passo-horario" && !tipo) id = "passo-tipo";
+    mostrarPasso(id, opcoes);
+    if (id === "passo-horario") carregarSlots();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function clicarEtapa(li) {
+    if (!li || !li.classList.contains("clicavel")) return;
+    const i = [...li.parentElement.children].indexOf(li);
+    irPara(FIM.has(passoAtual) ? "passo-tipo" : destinoEtapa(i));
+  }
+  $("etapas").addEventListener("click", (e) => clicarEtapa(e.target.closest("li")));
+  $("etapas").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); clicarEtapa(e.target.closest("li")); }
+  });
+  $("etapa-voltar").addEventListener("click", () => irPara(ANTERIOR[passoAtual]));
+  // Botão voltar do celular/navegador volta um passo em vez de sair do site
+  history.replaceState({ passo: "passo-tipo" }, "");
+  window.addEventListener("popstate", (e) => {
+    let id = e.state?.passo || "passo-tipo";
+    if (FIM.has(passoAtual) && !FIM.has(id)) id = "passo-tipo";   // depois de concluir, não volta ao formulário enviado
+    if (id === "passo-dados" && !slotSel) id = "passo-horario";
+    irPara(id, { semHistorico: true });
   });
 
   // ---------- Máscaras ----------
