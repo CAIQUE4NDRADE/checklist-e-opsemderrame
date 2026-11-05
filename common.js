@@ -135,14 +135,14 @@
     const tel = (n) => `<a href="tel:+55${soDigitos(n)}">${esc(n)}</a>`;
     const zap = (n) => `<a href="https://wa.me/55${soDigitos(n)}" target="_blank" rel="noopener">${esc(n)}</a>`;
     const linhas = [
-      `<b>${esc(cfg.NOME_APP || "Agenda BPA")}</b> · ${esc(cfg.NOME_LOCAL || "")}`,
-      cfg.ENDERECO ? `${esc(cfg.ENDERECO)}${cfg.MAPS_URL ? ` · <a href="${esc(cfg.MAPS_URL)}" target="_blank" rel="noopener">ver no mapa</a>` : ""}` : "",
-      cfg.TELEFONE_PORTARIA ? `Portaria: ${tel(cfg.TELEFONE_PORTARIA)}` : "",
-      cfg.WHATSAPP_PORTARIA ? `Gate da portaria (WhatsApp): ${zap(cfg.WHATSAPP_PORTARIA)}` : "",
-      cfg.HORARIO_ATENDIMENTO ? `Atendimento: ${esc(cfg.HORARIO_ATENDIMENTO)}` : "",
-      `<a href="privacidade.html">Política de privacidade</a>`,
-    ].filter(Boolean);
-    rodape.innerHTML = linhas.map((l) => `<div>${l}</div>`).join("");
+      ["r-nome", `<b>${esc(cfg.NOME_APP || "Agenda BPA")}</b> · ${esc(cfg.NOME_LOCAL || "")}`],
+      ["r-endereco", cfg.ENDERECO ? `${esc(cfg.ENDERECO)}${cfg.MAPS_URL ? ` · <a href="${esc(cfg.MAPS_URL)}" target="_blank" rel="noopener">ver no mapa</a>` : ""}` : ""],
+      ["r-tel", cfg.TELEFONE_PORTARIA ? `Portaria: ${tel(cfg.TELEFONE_PORTARIA)}` : ""],
+      ["r-gate", cfg.WHATSAPP_PORTARIA ? `Gate da portaria (WhatsApp): ${zap(cfg.WHATSAPP_PORTARIA)}` : ""],
+      ["r-horario", cfg.HORARIO_ATENDIMENTO ? `Atendimento: ${esc(cfg.HORARIO_ATENDIMENTO)}` : ""],
+      ["r-privacidade", `<a href="privacidade.html">Política de privacidade</a>`],
+    ].filter(([, l]) => l);
+    rodape.innerHTML = linhas.map(([c, l]) => `<div class="${c}">${l}</div>`).join("");
   }
 
   // Arquivo de calendário (.ics) para "Adicionar à minha agenda"
