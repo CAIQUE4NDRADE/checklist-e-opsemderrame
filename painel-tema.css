@@ -168,3 +168,132 @@ table.lista tr:hover td { background: color-mix(in srgb, var(--primary-soft) 40%
 .pe-pedido.cancelado { opacity: .55; }
 @media (max-width: 620px) { .pe-tabela td { padding: 10px 12px; } .pe-tabela .cpf { display: block; } }
 .pe-tabela td:first-child { width: 120px; }
+
+
+/* =====================================================================
+   v2 — painel no mesmo visual escuro do site (só aparência)
+   ===================================================================== */
+:root {
+  color-scheme: dark;
+  --bg: #07140d; --card: #0f2018; --text: #eef6f0; --muted: #a9bdb0;
+  --border: rgba(211,228,216,.16); --border-forte: rgba(122,193,67,.45);
+  --primary: #22c55e; --primary-hover: #34d672; --primary-ink: #04140a; --primary-soft: #123222;
+  --accent: #7ac143; --accent-text: #9be06a; --accent-soft: #15301c;
+  --ok: #4ade80; --ok-soft: #12301f; --warn: #fbbf24; --warn-soft: #36290c; --danger: #f87171; --danger-soft: #3a1717;
+  --gray-soft: rgba(255,255,255,.06); --shadow: none;
+  --pt-verde: #22c55e; --pt-verde-esc: #0f5f33; --pt-brilho: #39e26a;
+  --vidro: rgba(9, 26, 17, .78);
+}
+body, button, input, select, textarea { font-family: "Ubuntu", var(--font-texto); }
+h1, h2, h3, .kpi b { font-family: "Ubuntu", var(--font-texto) !important; letter-spacing: 0 !important; }
+body {
+  color: var(--text);
+  background:
+    radial-gradient(1000px 500px at 10% 40%, rgba(34,197,94,.14), transparent 60%),
+    radial-gradient(900px 500px at 100% 90%, rgba(34,197,94,.10), transparent 60%),
+    linear-gradient(180deg, #07140d 0%, #061009 100%);
+  background-attachment: fixed;
+}
+a { color: var(--accent-text); }
+
+/* Barra do topo */
+header.topo {
+  color: #fff; border-bottom: 3px solid var(--pt-brilho); box-shadow: 0 2px 22px rgba(57,226,106,.35);
+  background:
+    linear-gradient(90deg, #0a3a21 0%, #0a3a21 45%, rgba(10,58,33,.6) 65%, rgba(10,58,33,.15) 100%),
+    url("topo-terminal.jpg") right center / auto 100% no-repeat,
+    linear-gradient(110deg, #0b3a22 0%, #082a18 100%);
+}
+header.topo .marca::before { background: var(--pt-brilho); box-shadow: 0 0 10px rgba(57,226,106,.7); width: 4px; }
+header.topo h1 { color: #fff; font-weight: 700; }
+header.topo small { color: #d6eadc; }
+header.topo button { background: rgba(0,0,0,.35); color: #fff; border: 1px solid rgba(255,255,255,.35); }
+header.topo button:hover { background: rgba(0,0,0,.5); }
+
+/* Menu lateral */
+@media (min-width: 900px) {
+  body:has(#tela-app:not(.oculto))::before {
+    background: linear-gradient(180deg, #0c3a22 0%, #082a18 55%, #061a0f 100%);
+    border-right: 1px solid rgba(57,226,106,.25); box-shadow: 4px 0 24px rgba(0,0,0,.35);
+  }
+  .pt-logo { font-family: "Ubuntu", var(--font-texto); font-weight: 700; font-size: 2.5rem; }
+  #tela-app .tabs { border-top-color: rgba(57,226,106,.2); }
+  #tela-app .tab { color: #d7e9dd; font-weight: 500; }
+  #tela-app .tab[aria-selected="true"] {
+    background: linear-gradient(180deg, #47e27a 0%, #23b955 100%); color: #04140a; font-weight: 700;
+    box-shadow: 0 0 18px rgba(57,226,106,.55), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+}
+@media (max-width: 899px) {
+  #tela-app .tabs { background: var(--vidro); border: 1px solid rgba(211,228,216,.16); }
+  #tela-app .tab { color: #d7e9dd; }
+  #tela-app .tab[aria-selected="true"] { background: linear-gradient(180deg, #47e27a, #23b955); color: #04140a; box-shadow: 0 0 14px rgba(57,226,106,.5); }
+}
+
+/* Cartões de vidro */
+.card, .kpi, .bloco-hora {
+  background: var(--vidro); border: 1px solid rgba(57,226,106,.18); box-shadow: 0 10px 36px rgba(0,0,0,.35);
+  backdrop-filter: blur(6px);
+}
+.card { border-radius: 18px; }
+.card > h2:first-child {
+  background: linear-gradient(90deg, #1c8f43 0%, #177a3a 45%, rgba(23,122,58,.3) 100%);
+  border-bottom: 1px solid rgba(57,226,106,.4); color: #fff; border-radius: 18px 18px 0 0;
+}
+.cartaz > h2:first-child { background: none; border: 0; color: #fff; }
+#d-titulo, #pe-titulo { color: var(--pt-brilho) !important; }
+.kpi b { color: #fff; }
+.kpi span { color: var(--muted); }
+.kpi::before { box-shadow: 0 0 16px rgba(0,0,0,.25); }
+.kpi:nth-child(1)::before { background: radial-gradient(circle at 35% 30%, #4ade80, #16a34a); }
+.kpi:nth-child(2)::before { background: radial-gradient(circle at 35% 30%, #fcd34d, #d97706); }
+.kpi:nth-child(3)::before { background: radial-gradient(circle at 35% 30%, #60a5fa, #1d4ed8); content: "\f00c"; }
+.kpi:nth-child(4)::before { background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c); }
+
+/* Blocos da agenda e da entrada a pé */
+.bloco-hora { border-radius: 16px; }
+.bloco-hora > header { background: linear-gradient(90deg, #1c8f43 0%, #177a3a 50%, rgba(23,122,58,.35) 100%); border-bottom: 1px solid rgba(57,226,106,.35); }
+.bloco-hora > header .muted { background: rgba(0,0,0,.25); color: #d9f3e1; }
+.bloco-hora .agend { background: transparent; border-top-color: rgba(211,228,216,.1); }
+.bloco-hora .agend:hover, table.lista tr:hover td { background: rgba(57,226,106,.06); }
+.agend { background: rgba(255,255,255,.03); border-color: rgba(211,228,216,.14); }
+.agend-nome { color: #fff; }
+.placas { background: rgba(255,255,255,.07); color: #fff; }
+.pe-tabela td { border-top-color: rgba(211,228,216,.1); }
+.pe-tabela b { color: #fff; }
+.pe-rodape { background: rgba(0,0,0,.2); border-top-color: rgba(211,228,216,.1); }
+.chip-monitor { background: rgba(192,132,252,.18); color: #e2c8ff; }
+.chip-motorista { background: rgba(34,197,94,.18); color: #9be8b4; }
+.chegou { background: rgba(34,197,94,.16); color: #86efac; }
+
+/* Campos, tabelas e botões */
+input, select, textarea { background: rgba(0,0,0,.28); border: 1px solid rgba(211,228,216,.2); color: var(--text); }
+input::placeholder, textarea::placeholder { color: #7f978a; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--pt-brilho); outline-offset: 1px; border-color: transparent; }
+select option { background: #0f2018; color: var(--text); }
+table.lista th { background: rgba(255,255,255,.06); color: #fff; }
+table.lista td { border-bottom-color: rgba(211,228,216,.1); }
+button, .btn { background: rgba(255,255,255,.06); border: 1px solid rgba(211,228,216,.22); color: var(--text); }
+button:hover:not(:disabled), .btn:hover { background: rgba(255,255,255,.11); }
+.btn-primario { background: linear-gradient(180deg, #47e27a, #23b955) !important; border-color: transparent !important; color: #04140a !important; box-shadow: 0 0 16px rgba(57,226,106,.35); }
+.btn-primario:hover:not(:disabled) { background: linear-gradient(180deg, #5ef08d, #22c55e) !important; }
+.btn-perigo { background: transparent; color: var(--danger); border-color: var(--danger); }
+.btn-lixo { background: transparent; }
+.dias-semana label { background: rgba(255,255,255,.04); border-color: rgba(211,228,216,.18); color: var(--text); }
+.badge { box-shadow: 0 0 10px rgba(248,113,113,.6); }
+.ci-ok { background: rgba(34,197,94,.14); color: #86efac; }
+.ci-alerta { background: rgba(251,191,36,.12); color: #fcd34d; }
+.ci-erro { background: rgba(248,113,113,.12); color: #fca5a5; }
+.toast-ok { background: #16a34a; }
+
+/* Login */
+#tela-login { max-width: 460px; }
+
+@media print {
+  :root { color-scheme: light; }
+  body { background: #fff !important; color: #000; }
+  header.topo { background: none !important; color: #000; box-shadow: none; }
+  .card, .kpi, .bloco-hora { background: #fff !important; box-shadow: none; backdrop-filter: none; border-color: #ccc; }
+  .bloco-hora > header, .card > h2:first-child { background: none !important; color: #000 !important; }
+  .agend-nome, .pe-tabela b, .kpi b { color: #000 !important; }
+}
