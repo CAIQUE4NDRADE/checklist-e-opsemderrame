@@ -296,7 +296,7 @@
   // ================= Horários =================
   const DIAS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
   $("g-dias").innerHTML = DIAS.map((d, i) =>
-    `<label><input type="checkbox" value="${i}" ${i === 0 ? "" : "checked"}> ${d}</label>`).join("");
+    `<label><input type="checkbox" value="${i}" ${i === 6 ? "" : "checked"}> ${d}</label>`).join("");
   $("g-inicio").value = hojeSP();
   $("g-fim").value = somarDias(hojeSP(), 30);
   $("h-data").value = hojeSP();
@@ -316,7 +316,7 @@
     $("g-vagas").value = curso ? 20 : 1;
     $("g-dias").querySelectorAll("input").forEach((c) => {
       const d = Number(c.value);
-      c.checked = curso ? d === 2 : d !== 0;
+      c.checked = curso ? d === 2 : d !== 6;   // checklist: todos os dias, menos sábado
     });
   }
   $("g-tipo").addEventListener("change", presetGerar);
