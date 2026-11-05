@@ -218,3 +218,159 @@ button:hover:not(:disabled), .btn:hover { background: rgba(255,255,255,.1); }
 .etapas li.clicavel:hover { background: rgba(255,255,255,.06); color: #fff; }
 .etapa-compacta-texto { display: flex; align-items: center; gap: 10px; }
 .etapa-voltar { padding: 6px 12px; font-size: .9rem; border-radius: 999px; color: var(--pt-brilho); }
+
+
+/* =====================================================================
+   v2 — aproximação da referência visual (só aparência)
+   ===================================================================== */
+body, button, input, select, textarea { font-family: "Ubuntu", var(--font-texto); }
+h1, h2, h3, .tipo-opcao b, .codigo { font-family: "Ubuntu", var(--font-texto) !important; letter-spacing: 0 !important; }
+
+/* Ondas verdes no fundo */
+body { position: relative; }
+body::before, body::after {
+  content: ""; position: fixed; z-index: -1; pointer-events: none; border-radius: 50%;
+}
+body::before { width: 900px; height: 520px; left: -420px; top: 32%; background: radial-gradient(closest-side, rgba(34,197,94,.30), rgba(34,197,94,.08) 60%, transparent); transform: rotate(-12deg); }
+body::after { width: 1100px; height: 520px; right: -420px; bottom: -260px; background: radial-gradient(closest-side, rgba(34,197,94,.22), rgba(34,197,94,.05) 65%, transparent); }
+
+/* Topo: foto do terminal à direita, onda verde e linha brilhante */
+header.topo {
+  padding: 30px 16px 34px; min-height: 190px; display: flex; align-items: center;
+  background:
+    linear-gradient(90deg, #0a3a21 0%, #0a3a21 42%, rgba(10,58,33,.55) 58%, rgba(10,58,33,0) 72%),
+    url("topo-terminal.jpg") right center / auto 100% no-repeat,
+    linear-gradient(110deg, #0b3a22 0%, #082a18 100%);
+  border-bottom: 3px solid #39e26a; box-shadow: 0 2px 26px rgba(57,226,106,.45);
+}
+header.topo::after {
+  content: ""; position: absolute; right: -6%; bottom: -60%; width: 46%; height: 120%;
+  border-radius: 50% 0 0 0; pointer-events: none;
+  background: linear-gradient(160deg, rgba(57,226,106,.0) 30%, rgba(57,226,106,.55) 70%, #39e26a);
+  opacity: .55; filter: blur(1px);
+}
+header.topo .wrap-estreito { width: 100%; }
+.pt-wordmark { font-family: "Ubuntu", var(--font-texto); font-size: 3.4rem; font-weight: 700; letter-spacing: -1.5px; }
+.pt-sep { width: 3px; min-height: 70px; background: #39e26a; box-shadow: 0 0 10px rgba(57,226,106,.7); border-radius: 2px; }
+.marca-topo img { width: 64px !important; height: 64px !important; background: transparent; border: 3px solid #fff; border-radius: 16px; padding: 8px; }
+header.topo h1 { font-size: 2.3rem !important; font-weight: 700; }
+header.topo small { font-size: 1.2rem; color: #eef8f1; margin-top: 4px; }
+header.topo .topo-desc { font-size: 1rem; margin-top: 12px; color: #e3f1e7; }
+
+/* Abas: pílula escura com divisórias, ativa verde brilhante */
+.tabs { background: rgba(10, 28, 19, .78); border: 1px solid rgba(211,228,216,.18); padding: 5px; }
+.tab { position: relative; font-weight: 500; font-size: 1.1rem; padding: 14px 12px; }
+.tab + .tab:not([aria-selected="true"])::after {
+  content: ""; position: absolute; left: 0; top: 22%; bottom: 22%; width: 1px; background: rgba(211,228,216,.22);
+}
+.tab[aria-selected="true"] + .tab::after { display: none; }
+.tab[aria-selected="true"] {
+  background: linear-gradient(180deg, #47e27a 0%, #23b955 100%);
+  box-shadow: 0 0 22px rgba(57,226,106,.6), inset 0 1px 0 rgba(255,255,255,.3);
+}
+.tab::before { font-size: 1.25rem; margin-right: 14px; }
+.tab[data-aba="orientacoes"]::before { content: "\f017"; font-weight: 900; }
+
+/* Etapas: atual preenchida e acesa, linha verde até a próxima */
+.etapas { margin-bottom: 24px; }
+.etapas li { font-size: 1.02rem; font-weight: 500; }
+.etapas li::before { width: 44px; height: 44px; font-family: "Ubuntu", var(--font-texto); font-size: 1.2rem; border-width: 2px; }
+.etapas li:not(:last-child)::after { top: 21px; }
+.etapas li.atual::before { background: #22c55e; border-color: #7af59f; color: #fff; box-shadow: 0 0 0 4px rgba(57,226,106,.18), 0 0 18px rgba(57,226,106,.75); }
+.etapas li.atual:not(:last-child)::after { background: linear-gradient(90deg, #39e26a, rgba(57,226,106,.25)); }
+.etapas li.atual { color: #39e26a; box-shadow: inset 0 -4px 0 #39e26a; font-weight: 700; }
+
+/* Cartão principal: faixa verde com ícone de volante */
+.card { background: rgba(9, 26, 17, .78); border-color: rgba(57,226,106,.22); border-radius: 22px; }
+.card > h2:first-child {
+  background: linear-gradient(90deg, #1c8f43 0%, #177a3a 40%, rgba(23,122,58,.35) 100%);
+  border-bottom: 1px solid rgba(57,226,106,.45); border-radius: 22px 22px 0 0; font-size: 1.55rem; padding: 18px 28px;
+}
+#passo-tipo > h2:first-child { display: flex; align-items: center; gap: 18px; }
+#passo-tipo > h2:first-child::before {
+  content: ""; width: 38px; height: 38px; margin: 0; flex: 0 0 auto;
+  background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%222.2%22%20stroke-linecap%3D%22round%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%229.5%22/%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2213%22%20r%3D%222.2%22/%3E%3Cpath%20d%3D%22M3%2011.5c3-1.6%2015-1.6%2018%200%22/%3E%3Cpath%20d%3D%22M10.2%2014.6%207.5%2021%22/%3E%3Cpath%20d%3D%22M13.8%2014.6%2016.5%2021%22/%3E%3C/svg%3E") center / contain no-repeat;
+}
+#passo-tipo { padding-bottom: 34px; }
+
+/* Cartões de serviço */
+.tipos { gap: 20px; }
+.tipo-opcao {
+  grid-template-columns: 92px 1fr; column-gap: 26px; align-items: center; min-height: 270px;
+  padding: 28px 28px 76px; border-radius: 18px;
+  background: linear-gradient(165deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.015) 60%);
+  border: 1px solid rgba(211,228,216,.2);
+}
+.tipo-opcao::before { width: 92px; height: 92px; font-size: 2.1rem; align-self: start; }
+.tipo-opcao b { font-size: 1.5rem; font-weight: 700; line-height: 1.25; margin-bottom: 12px; align-self: end; }
+.tipo-opcao small { font-size: 1.15rem; line-height: 1.45; color: #c9d9cf; align-self: start; }
+.tipo-opcao::after { width: 50px; height: 50px; right: 18px; bottom: 18px; font-size: 1.1rem; border-width: 2px; border-color: rgba(255,255,255,.7); }
+.tipo-opcao[data-tipo="checklist"] { border-color: #39e26a; box-shadow: 0 0 0 1px #39e26a, 0 0 28px rgba(57,226,106,.35); }
+.tipo-opcao:hover, .tipo-opcao:focus-visible { transform: translateY(-3px); }
+@media (max-width: 900px) {
+  .tipo-opcao { min-height: 0; grid-template-columns: 64px 1fr; column-gap: 16px; padding: 20px 20px 70px; }
+  .tipo-opcao::before { width: 64px; height: 64px; font-size: 1.5rem; }
+  .tipo-opcao b { font-size: 1.25rem; }
+  .tipo-opcao small { font-size: 1rem; }
+}
+
+/* Rodapé em colunas com a marca à direita */
+.rodape { padding: 26px 16px 28px; background: rgba(3, 12, 7, .9); border-top: 3px solid #39e26a; box-shadow: 0 -2px 26px rgba(57,226,106,.3); }
+.rodape .wrap-estreito { max-width: 1400px; display: flex; flex-wrap: nowrap; align-items: stretch; gap: 0; }
+.rodape .wrap-estreito > div {
+  display: grid; grid-template-columns: 34px 1fr; grid-template-rows: auto auto; column-gap: 8px; row-gap: 6px; align-content: center;
+  padding: 6px 30px; border-left: 1px solid rgba(211,228,216,.2); font-size: 1.02rem; color: #e7f2ea;
+}
+.rodape .wrap-estreito > div:first-child { border-left: 0; padding-left: 0; }
+.rodape .wrap-estreito > div::before { grid-row: 1 / span 2; align-self: center; width: auto; font-size: 1.6rem; color: #39e26a; }
+.rodape .r-gate::before { content: "\f590"; }
+.rodape .r-valor { grid-column: 2; color: #dbe9df; }
+.rodape .r-gate .r-valor a::before { content: "\f232"; font-family: "Font Awesome 6 Brands"; font-weight: 400; margin-right: 8px; font-size: 1.25rem; text-decoration: none; display: inline-block; }
+.rodape .r-gate .r-valor a { font-size: 1.12rem; font-weight: 500; }
+.rodape .r-marca { margin-left: auto; grid-template-columns: auto auto !important; align-items: center; }
+.rodape .r-marca::before { display: none; }
+.rodape .r-logo { grid-row: 1 / span 2; font-family: "Ubuntu", var(--font-texto); font-size: 2.6rem; font-weight: 700; letter-spacing: -1px; color: #fff; padding-right: 20px; border-right: 2px solid rgba(255,255,255,.85); margin-right: 12px; }
+.rodape .r-marca .r-valor { grid-column: 2; grid-row: 1 / span 2; align-self: center; font-size: .92rem; }
+.rodape b { font-weight: 700; }
+@media (max-width: 900px) {
+  .rodape .wrap-estreito { flex-wrap: wrap; gap: 16px 0; }
+  .rodape .wrap-estreito > div { width: 100%; border-left: 0; padding: 0; }
+  .rodape .r-marca { margin-left: 0; }
+  .rodape .r-logo { font-size: 2rem; }
+}
+
+/* Celular */
+@media (max-width: 760px) {
+  header.topo { min-height: 0; background:
+    linear-gradient(90deg, #0a3a21 0%, rgba(10,58,33,.88) 55%, rgba(10,58,33,.55) 100%),
+    url("topo-terminal.jpg") right center / auto 100% no-repeat, #0a3a21; }
+  header.topo::after { display: none; }
+  header.topo h1 { font-size: 1.5rem !important; }
+  header.topo small { font-size: .95rem; }
+  .marca-topo img { width: 52px !important; height: 52px !important; }
+  .tab { font-size: .86rem; padding: 10px 6px; }
+  .tab + .tab:not([aria-selected="true"])::after { top: 18%; bottom: 18%; }
+  .card > h2:first-child { font-size: 1.2rem; padding: 14px 18px; }
+  #passo-tipo > h2:first-child::before { width: 28px; height: 28px; }
+}
+@media print { body::before, body::after, header.topo::after { display: none; } }
+/* Largura como na referência */
+main.wrap-estreito, header.topo .wrap-estreito { max-width: 1400px; }
+header.topo .topo-desc { max-width: 560px; }
+.tabs, .etapas { max-width: 940px; }
+@media (min-width: 1100px) { #passo-tipo { margin: 0 24px; } }
+
+/* Página de privacidade */
+main.wrap-estreito:has(> article.texto) { max-width: 900px; }
+article.texto { line-height: 1.7; color: var(--text); }
+article.texto h2 { color: #fff; font-size: 1.6rem; margin-top: 8px; }
+article.texto h3 { color: #39e26a; margin-top: 26px; }
+article.texto li::marker { color: #39e26a; }
+article.texto > p:first-child a { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 999px;
+  border: 1px solid rgba(57,226,106,.45); color: #39e26a; text-decoration: none; font-weight: 500; }
+article.texto > p:first-child a:hover { background: rgba(57,226,106,.1); }
+@media (min-width: 901px) {
+  .rodape .r-gate, .rodape .r-horario, .rodape .r-tel, .rodape .r-marca { white-space: nowrap; flex: 0 0 auto; }
+  .rodape .r-endereco { flex: 1 1 auto; min-width: 0; }
+  .rodape .r-marca .r-valor { white-space: normal; max-width: 110px; }
+}

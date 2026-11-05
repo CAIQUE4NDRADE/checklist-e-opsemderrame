@@ -134,15 +134,18 @@
   if (rodape) {
     const tel = (n) => `<a href="tel:+55${soDigitos(n)}">${esc(n)}</a>`;
     const zap = (n) => `<a href="https://wa.me/55${soDigitos(n)}" target="_blank" rel="noopener">${esc(n)}</a>`;
-    const linhas = [
-      ["r-nome", `<b>${esc(cfg.NOME_APP || "Agenda BPA")}</b> · ${esc(cfg.NOME_LOCAL || "")}`],
-      ["r-endereco", cfg.ENDERECO ? `${esc(cfg.ENDERECO)}${cfg.MAPS_URL ? ` · <a href="${esc(cfg.MAPS_URL)}" target="_blank" rel="noopener">ver no mapa</a>` : ""}` : ""],
-      ["r-tel", cfg.TELEFONE_PORTARIA ? `Portaria: ${tel(cfg.TELEFONE_PORTARIA)}` : ""],
-      ["r-gate", cfg.WHATSAPP_PORTARIA ? `Gate da portaria (WhatsApp): ${zap(cfg.WHATSAPP_PORTARIA)}` : ""],
-      ["r-horario", cfg.HORARIO_ATENDIMENTO ? `Atendimento: ${esc(cfg.HORARIO_ATENDIMENTO)}` : ""],
-      ["r-privacidade", `<a href="privacidade.html">Política de privacidade</a>`],
-    ].filter(([, l]) => l);
-    rodape.innerHTML = linhas.map(([c, l]) => `<div class="${c}">${l}</div>`).join("");
+    // Cada coluna: [classe, título, conteúdo]
+    const mapa = cfg.MAPS_URL ? ` · <a href="${esc(cfg.MAPS_URL)}" target="_blank" rel="noopener">ver no mapa</a>` : "";
+    const colunas = [
+      ["r-endereco", `<b>${esc(cfg.NOME_APP || "Agenda BPA")}</b> · ${esc(cfg.NOME_LOCAL || "")}`,
+        cfg.ENDERECO ? `${esc(cfg.ENDERECO)}${mapa}` : ""],
+      ["r-tel", cfg.TELEFONE_PORTARIA ? "Portaria:" : "", cfg.TELEFONE_PORTARIA ? tel(cfg.TELEFONE_PORTARIA) : ""],
+      ["r-gate", cfg.WHATSAPP_PORTARIA ? "Gate da portaria (WhatsApp):" : "", cfg.WHATSAPP_PORTARIA ? zap(cfg.WHATSAPP_PORTARIA) : ""],
+      ["r-horario", cfg.HORARIO_ATENDIMENTO ? "Atendimento:" : "", esc(cfg.HORARIO_ATENDIMENTO || "")],
+      ["r-marca", `<span class="r-logo">raízen</span>`, `<a href="privacidade.html">Política de privacidade</a>`],
+    ].filter(([, t]) => t);
+    rodape.innerHTML = colunas.map(([c, t, v]) =>
+      `<div class="${c}"><span class="r-titulo">${t}</span>${v ? `<span class="r-valor">${v}</span>` : ""}</div>`).join("");
   }
 
   // Arquivo de calendário (.ics) para "Adicionar à minha agenda"
